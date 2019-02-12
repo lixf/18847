@@ -2,119 +2,45 @@ import math
 import numpy as np
 from scipy import signal
 
-TEST = 15000
-
-class colors:
-    reset='\033[0m'
-    class fg:
-        red='\033[31m'
-        green='\033[32m'
-        orange='\033[33m'
-        blue='\033[34m'
-    class bg:
-        black='\033[40m'
-        red='\033[41m'
-        green='\033[42m'
-        orange='\033[43m'
-        blue='\033[44m'
-
-def GetColor(x):
-    if x > 0 and x < 3:
-        return colors.bg.green
-    elif x >= 3 and x < 6:
-        return colors.bg.blue
-    elif x >= 6:
-        return colors.bg.red
-    else: 
-        # x == 0
-        return ''
-
-
 #Layer may not be both the first layer and an output layer
 class FirstLayer: 
-    def __init__ (self, layer_id, training_raw_data, training_target):
+    def __init__ (self, layer_id, training_raw_data, threshold):
         self.layer_id = layer_id
         self.raw_data = training_raw_data
-        self.num_bits = 0
+        self.target = training_target
+        self.spikes=np.full((len(training_raw_data), 18), -1)
+        self.num_neurons = self.spikes.shape[1]
+        self.threshold = threshold
 
-        # Stored data after applying the needed filter
-        self.filtered_data = np.zeros(np.shape(self.raw_data))
-        self.target = training_target # Not sure what this is for!
+    # Preprocesses the raw data with a filter
+    def preprocess (self, my_filter, num_bits=3 ):
+        scaled_data = self.raw_data
 
-        # Only output 3 * 3 matrix for spike times
-        self.spikes = np.zeros((len(self.raw_data), 28, 28))
+        # Max value is 255
+        step = 255 / math.pow(2,num_bits)
 
-    def dump_data(self, data):
-        print ("Need to print %d samples" % (len(data)))
-        for n in range(len(data)):
+        # Scale the data down to 3 bits
+        scaled_data = 8 - (scaled_data / step).astype(int)
 
-            if n != TEST:
-                continue
+        # apply the filter
+        return my_filter(scaled_data)
 
-            print('Sample #%d' % n)
-            for x in range(28):
-                for y in range(28):
-                    print (GetColor(data[n][x][y]) + str(int(data[n][x][y])) 
-                            + " " + colors.reset, end='')
-                print('', end='\n')
-    
-    def dump_data_small(self, data):
-        print ("Need to print %d samples" % (len(data)))
-        for n in range(len(data)):
+    def generate_spikes(self,filter1, filter2):
 
-            if n != TEST:
-                continue
+        # Applies 2 filters to a receptive field of 3x3
+        preprocessed1 = self.preprocess(filter1)[:,12:15, 12:15]
+        preprocessed2 = self.preprocess(filter2)[:,12:15, 12:15]
 
-            print('Sample #%d' % n)
-            for x in range(3):
-                for y in range(3):
-                    print ("%d " % (data[n][(x+12)][(y+12)]), end='')
-                print('', end='\n')
+        # Combines the two filters to be contained within 18 neurons
 
-    def preprocess(self, my_filter, num_bits=3 ):
-        self.num_bits = num_bits
-        for n in range(len(self.raw_data)):
-            image = np.array(self.raw_data[n]).astype(np.float64)
-            image *= (float((1 << num_bits) - 1) / image.max())
-            self.raw_data[n] = np.rint(image).astype(np.int8)
+        preprocessed = np.concatenate((preprocessed1, preprocessed2), axis=0)
+        # Makes large difference result in early spike and small difference in late spike
+        spikes = 8 - preprocessed.reshape(self.spikes.shape)
 
-        print("after normalizing")
-        self.dump_data(self.raw_data)
-        self.filtered_data = my_filter(self.raw_data)
+        # Sets value to -1 if no spike
+        spikes[spikes >= threshold] = -1
+        self.spikes = spikes
 
-        print("after filtering")
-        self.dump_data(self.filtered_data)
-
-    def generate_spikes(self, threshold):
-        self.dump_data_small(self.filtered_data)
-        if self.num_bits == 0:
-            print("did not go through preprocessing yet!")
-            return
-
-        for n in range(len(self.filtered_data)):
-            for x in range(28):
-                for y in range(28):
-                    # The more intense the data, the earlier the spike time
-                    # Since we scaled to some number of bits, let's flip the 
-                    # order to generate spikes: (e.g. if 3 bits)
-                    # if pixel value is 1 after filtering, the spike time is 6
-                    # for 7, it's 0; 5 -> 2,  etc..
-                    val = self.filtered_data[n][x][y]
-                    if val > threshold :
-                        self.spikes[n][x][y] = ((1 << self.num_bits) - 1) - val
-                    else :
-                        # If less than threshold, then use 8 since we know data
-                        # range is only 0-7 and 8 is not in the range.
-                        self.spikes[n][x][y] = 8
-                    #print ("%d, (%d, %d), %d " % (n, (x), (y), \
-                    #            self.spikes[n][x][y]))
-
-
-    def write_spiketimes(self, path, receptive_field): 
-        f= open(path,"w+")
-        for n in range(len(self.spikes)):
-        #for n in range(10):
-            for (x, y) in receptive_field:
-                f.write("%d, (%d, %d)/OFF, %d\n" % (n, (x), (y), \
-                        self.spikes[n][x][y]))
-        return
+    def increment_time(self):
+        # Updates the spike time value with each time iteration
+        self.spikes[self.spikes >= -1] -= 1
