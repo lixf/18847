@@ -2,6 +2,22 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 
+# This layer connects to a previous layer that is spiking.
+# It carries W weights that are initialized at random.
+# If the sum of the weights from the previous layer that
+# are at local time 0 exceeds a neuron_sum threshold,
+# then a spike occurs at the neuron.
+
+# Reset is used between each training image to clear
+# the neuron sums that have accumulated from the previous image
+
+# After each time step, the neuron sums are decremented along with
+# the local spiketimes.
+
+# Immediately as soon as the neuron sums exceeds the threshold,
+# firing happens immediately. Therefore, in local time, the spike
+# will always be 0 and therefore self.spikes will always be either
+# -1 or 0, where -1 is no spike and 0 is a spike happenning right now.
 class Layer():
     def __init__(self, layer_id, num_neurons, prev_layer, threshold):  
         self.layer_id = layer_id
