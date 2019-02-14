@@ -7,9 +7,8 @@ class FirstLayer:
     def __init__ (self, layer_id, training_raw_data, threshold):
         self.layer_id = layer_id
         self.raw_data = training_raw_data
-        self.target = training_target
-        self.spikes=np.full((len(training_raw_data), 18), -1)
-        self.num_neurons = self.spikes.shape[1]
+        self.spikes=np.full(18, -1)
+        self.num_neurons = self.spikes.shape[0]
         self.threshold = threshold
 
     # Preprocesses the raw data with a filter
@@ -21,15 +20,14 @@ class FirstLayer:
 
         # Scale the data down to 3 bits
         scaled_data = 8 - (scaled_data / step).astype(int)
-
         # apply the filter
         return my_filter(scaled_data)
 
     def generate_spikes(self,filter1, filter2):
 
         # Applies 2 filters to a receptive field of 3x3
-        preprocessed1 = self.preprocess(filter1)[:,12:15, 12:15]
-        preprocessed2 = self.preprocess(filter2)[:,12:15, 12:15]
+        preprocessed1 = self.preprocess(filter1)[12:15, 12:15]
+        preprocessed2 = self.preprocess(filter2)[12:15, 12:15]
 
         # Combines the two filters to be contained within 18 neurons
 
@@ -38,7 +36,7 @@ class FirstLayer:
         spikes = 8 - preprocessed.reshape(self.spikes.shape)
 
         # Sets value to -1 if no spike
-        spikes[spikes >= threshold] = -1
+        spikes[spikes >= self.threshold] = -1
         self.spikes = spikes
 
     def increment_time(self):

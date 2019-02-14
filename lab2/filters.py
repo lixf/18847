@@ -5,14 +5,14 @@ def sum_surrounds(data):
   sum = np.zeros(data.shape)
 
   # Matrix operations to shift data left, right, up, down, diag, etc
-  sum = sum + np.pad(data,((0,0),(0,1),(0,1)), mode='constant')[:,1:, 1:] # top left
-  sum = sum + np.pad(data,((0,0),(0,0),(0,1)), mode='constant')[:,:, 1:] # mid left
-  sum = sum + np.pad(data,((0,0),(1,0),(0,1)), mode='constant')[:,:-1, 1:] # bottom left
-  sum = sum + np.pad(data,((0,0),(1,0),(0,0)), mode='constant')[:,:-1, :] # bottom
-  sum = sum + np.pad(data,((0,0),(1,0),(1,0)), mode='constant')[:,:-1, :-1] # bottom right
-  sum = sum + np.pad(data,((0,0),(0,0),(1,0)), mode='constant')[:,:, :-1] # mid right
-  sum = sum + np.pad(data,((0,0),(0,1),(1,0)), mode='constant')[:,1:, :-1] # top right
-  sum = sum + np.pad(data,((0,0),(0,1),(0,0)), mode='constant')[:,1:, :] # top
+  sum = sum + np.pad(data,((0,1),(0,1)), mode='constant')[1:, 1:] # top left
+  sum = sum + np.pad(data,((0,0),(0,1)), mode='constant')[:, 1:] # mid left
+  sum = sum + np.pad(data,((1,0),(0,1)), mode='constant')[:-1, 1:] # bottom left
+  sum = sum + np.pad(data,((1,0),(0,0)), mode='constant')[:-1, :] # bottom
+  sum = sum + np.pad(data,((1,0),(1,0)), mode='constant')[:-1, :-1] # bottom right
+  sum = sum + np.pad(data,((0,0),(1,0)), mode='constant')[:, :-1] # mid right
+  sum = sum + np.pad(data,((0,1),(1,0)), mode='constant')[1:, :-1] # top right
+  sum = sum + np.pad(data,((0,1),(0,0)), mode='constant')[1:, :] # top
   return sum
 
 # Average of surround minus center

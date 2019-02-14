@@ -7,17 +7,15 @@ class Layer():
         self.layer_id = layer_id
         self.prev_layer = prev_layer
         self.threshold = threshold
-        self.N,_,_ = self.prev_layer.raw_data.shape
         self.num_neurons = num_neurons
         self.W = np.random.random(size=(prev_layer.num_neurons, num_neurons))
-        self.neuron_sums = np.zeros(shape=(self.N,num_neurons))
-        self.spikes = np.full(shape=(self.N, num_neurons),fill_value=-1)
+        self.neuron_sums = np.zeros(shape=(num_neurons))
+        self.spikes = np.full(shape=(num_neurons),fill_value=-1)
 
     def reset(self): 
         # Reset the network, clearing out any accumulator variables, etc
-        self.neuron_sums = np.zeros(shape=(self.N,num_neurons))
-        self.spikes = np.full(shape=(self.N, num_neurons),fill_value=-1)
-        self.N,_,_ = self.prev_layer.raw_data.shape
+        self.neuron_sums = np.zeros(shape=(self.num_neurons))
+        self.spikes = np.full(shape=(self.num_neurons),fill_value=-1)
 
     
     def generate_spikes(self):
