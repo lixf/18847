@@ -64,5 +64,5 @@ class FirstLayer:
 
     def increment_time(self):
         # Updates the spike time value with each time iteration
-        self.spikes[self.spikes >= -1] -= 1
+        self.spikes[self.spikes > -1] -= 1
         self.feedforward_inhibition(self.inhibit_k)
