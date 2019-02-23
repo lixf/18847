@@ -45,8 +45,11 @@ class Layer():
         input_spikes = (self.prev_layer.spikes == 0)
 
         self.neuron_sums += np.matmul(input_spikes, W)
+
+        # spike when the neuron sum exceeds the threshold
         self.spikes[self.neuron_sums >= threshold] = 0
         
+        # reset the neuron sums after firing
         self.neuron_sums[self.neuron_sums > threshold] = 0
 
         return
