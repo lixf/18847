@@ -27,6 +27,7 @@ class Layer():
         self.W = np.random.random(size=(prev_layer.num_neurons, num_neurons))
         self.neuron_sums = np.zeros(shape=(num_neurons))
         self.spikes = np.full(shape=(num_neurons),fill_value=-1)
+        self.inhibited_spikes = np.full(shape=(num_neurons), fill_value = False)
 
         self.curr_winner_count = 0
         self.remaining_inhibition_time = 0
@@ -73,6 +74,7 @@ class Layer():
 
         potential_winners = np.array(np.where(spikes == 0)[0])
 
+        old_spikes = np.copy(spikes)
         out = np.zeros(spikes.shape)
         out[:] = -1
 
@@ -91,17 +93,20 @@ class Layer():
           random_winners = np.random.choice(num_indices, min(num_indices, winners_left))
           out[random_winners] = 0
         
+        self.inhibited_spikes[(old_spikes == 0) & (out == -1)] = True
         self.spikes = out
         return (out, random_winners)
     def STDP(self):
       input_spikes = (self.prev_layer.spikes == 0)
 
-      input_output = np.outer(input_spikes, self.spikes == 0)
-      input_no_output = np.outer(input_spikes, self.spikes != 0)
-      no_input_output = np.outer(input_spikes == 0, self.spikes == 0)
-
+      input_output = np.outer(input_spikes == 0, self.spikes == 0)
+      input_no_output = np.outer(input_spikes == 0, self.spikes != 0)
+      input_inhibited_output = np.outer(input_spikes == 0, self.inhibited_spikes == True)
+      no_input_output = np.outer(input_spikes != 0, self.spikes == 0)
+      
 
       self.W[input_output == True] = np.minimum(10,self.W[input_output == True] + .01)
       self.W[input_no_output == True] = np.minimum(10,self.W[input_no_output == True] + .001)
+      self.W[input_inhibited_output == True] = np.minimum(10,self.W[input_inhibited_output == True] - .01)
       self.W[no_input_output == True] = np.maximum(0,self.W[no_input_output == True] - .01)
       print(self.W)
