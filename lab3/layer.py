@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 # the local spiketimes.
 
 # Immediately as soon as the neuron sums exceeds the threshold,
-# firing happens immediately. Therefore, in local time, the spike
+# firing happens immediately.  Therefore, in local time, the spike
 # will always be 0 and therefore self.spikes will always be either
 # -1 or 0, where -1 is no spike and 0 is a spike happenning right now.
 class Layer():
@@ -90,7 +90,18 @@ class Layer():
           winners_left = num_winners - self.curr_winner_count
           random_winners = np.random.choice(num_indices, min(num_indices, winners_left))
           out[random_winners] = 0
-          
-
-
+        
+        self.spikes = out
         return (out, random_winners)
+    def STDP(self):
+      input_spikes = (self.prev_layer.spikes == 0)
+
+      input_output = np.outer(input_spikes, self.spikes == 0)
+      input_no_output = np.outer(input_spikes, self.spikes != 0)
+      no_input_output = np.outer(input_spikes == 0, self.spikes == 0)
+
+
+      self.W[input_output == True] = np.minimum(10,self.W[input_output == True] + .01)
+      self.W[input_no_output == True] = np.minimum(10,self.W[input_no_output == True] + .001)
+      self.W[no_input_output == True] = np.maximum(0,self.W[no_input_output == True] - .01)
+      print(self.W)
