@@ -19,6 +19,11 @@ class FirstLayer:
         self.num_neurons = self.spikes.shape[0]
         self.threshold = threshold
         self.inhibit_k = inhibit_k
+        
+        self.inhibited_spikes = np.full(shape=(18), fill_value = False)
+
+        self.curr_winner_count = 0
+        self.remaining_inhibition_time = 0
 
     # Preprocesses the raw data with a filter
     def preprocess (self, my_filter, num_bits=3 ):
@@ -32,13 +37,10 @@ class FirstLayer:
         # apply the filter
         return my_filter(scaled_data)
 
-    def feedforward_inhibition(self, k):
-        # Implements feedforward inhibition by making such that,
-        # within a given timestep, if there are more than k spikes,
-        # they will be nulled out. otherwise, they will pass
-        current_volley = self.spikes == 0
-        if (np.sum(current_volley) > k):
-          self.spikes[self.spikes == 0] = -1
+    def reset(self): 
+        # Reset the network, clearing out any accumulator variables, etc
+        self.curr_winner_count = 0
+        self.remaining_inhibition_time = 0
 
     def generate_spikes(self,filter1, filter2):
 
@@ -59,10 +61,42 @@ class FirstLayer:
         # Sets value to -1 if no spike
         spikes[spikes >= self.threshold] = -1
         self.spikes = spikes
-        self.feedforward_inhibition(self.inhibit_k)
 
 
     def increment_time(self):
         # Updates the spike time value with each time iteration
-        self.spikes[self.spikes >= -1] -= 1
-        self.feedforward_inhibition(self.inhibit_k)
+        self.spikes[self.spikes > -1] -= 1
+        #self.feedforward_inhibition(self.inhibit_k)
+    def wta(self, num_winners, LI_WINDOW):
+        '''
+        Performs Winner-Take-All inhibition on the spikes
+        num_winner is the number of winners we will let pass the inhibition
+        winner_index is the previous winning index
+        '''
+        spikes = self.spikes
+
+        potential_winners = np.array(np.where(spikes == 0)[0])
+        old_spikes = np.copy(spikes)
+        out = np.copy(spikes)
+
+        if self.remaining_inhibition_time == 0 and np.sum(spikes == 0) > 0:
+          self.curr_winner_count = 0
+          self.remaining_inhibition_time = LI_WINDOW
+        else:
+          self.remaining_inhibition_time -= 1
+        
+        random_losers = np.array([])
+
+        
+        winners_left = num_winners - self.curr_winner_count
+        winners_selected = min(winners_left, potential_winners.shape[0])
+        self.curr_winner_count += winners_selected
+        if potential_winners.shape[0]:
+          np.random.shuffle(potential_winners)
+          random_losers = potential_winners[winners_selected:]
+          out[random_losers] = -1
+        
+        self.inhibited_spikes[(old_spikes == 0) & (out == -1)] = True
+        self.spikes = np.copy(out)
+        winners = np.array(np.where(self.spikes == 0))
+        return (out, winners)
