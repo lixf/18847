@@ -25,7 +25,7 @@ with open('spiketimes.csv', 'w', newline='') as csvfile:
   writer = csv.writer(csvfile)
 
   # Generates spikes for layer 1 using 2 different filters
-  for i in range(len(mnist.square_data[:2])):
+  for i in range(len(mnist.square_data[:10])):
     layer1.raw_data = mnist.square_data[i]
     layer1.generate_spikes(OnCenterFilter, OffCenterFilter)
 
@@ -33,6 +33,7 @@ with open('spiketimes.csv', 'w', newline='') as csvfile:
 
     for j in range(num_iterations):
       layer2.generate_spikes()
+      layer2.STDP()
       (li_spikes, li_index) = layer2.wta(1, LI_WINDOW)
 
       for k in range(layer2.spikes.shape[0]):
