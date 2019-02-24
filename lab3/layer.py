@@ -28,6 +28,9 @@ class Layer():
         self.neuron_sums = np.zeros(shape=(num_neurons))
         self.spikes = np.full(shape=(num_neurons),fill_value=-1)
 
+        self.curr_winner_count = 0
+        self.remaining_inhibition_time = 0
+
     def reset(self): 
         # Reset the network, clearing out any accumulator variables, etc
         self.neuron_sums = np.zeros(shape=(self.num_neurons))
@@ -59,3 +62,35 @@ class Layer():
         self.spikes[self.spikes > -1] -= 1
         self.neuron_sums[self.neuron_sums > 5] -= .5
 
+    def wta(self, num_winners, LI_WINDOW):
+        '''
+        Performs Winner-Take-All inhibition on the spikes
+        num_winner is the number of winners we will let pass the inhibition
+        winner_index is the previous winning index
+        '''
+        spikes = self.spikes
+        wta = self.wta
+
+        potential_winners = np.array(np.where(spikes == 0)[0])
+
+        out = np.zeros(spikes.shape)
+        out[:] = -1
+
+        if self.remaining_inhibition_time == 0 and np.sum(potential_winners) > 0:
+          self.curr_winner_count = 0
+          self.remaining_inhibition_time = LI_WINDOW
+        else:
+          self.remaining_inhibition_time -= 1
+        
+        random_winners = np.array([])
+
+        num_indices = potential_winners.shape[0]
+
+        if (num_indices):
+          winners_left = num_winners - self.curr_winner_count
+          random_winners = np.random.choice(num_indices, min(num_indices, winners_left))
+          out[random_winners] = 0
+          
+
+
+        return (out, random_winners)
