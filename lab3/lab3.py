@@ -17,7 +17,7 @@ mnist.square_data = mnist.data.reshape(N,28,28)
 
 # Structure of the TNN
 layer1 = firstlayer.FirstLayer(layer_id=1, training_raw_data=mnist.square_data[0], threshold=8, inhibit_k=3)
-layer2 = layer.Layer(layer_id=2, num_neurons=10, prev_layer=layer1, threshold=40)
+layer2 = layer.Layer(layer_id=2, num_neurons=16, prev_layer=layer1, threshold=40)
 num_iterations = 9
 
 results = np.zeros(shape=(layer2.spikes.shape[0],10))
@@ -44,7 +44,7 @@ with open('spiketimes.csv', 'w', newline='') as csvfile:
           spike_position = k
           spike_time = j
           writer.writerow([image_number, spike_position, spike_time])
-          results[int(mnist.target[i]), k]+=1
+          results[k, int(mnist.target[i])]+=1
           
   
       layer1.increment_time()
