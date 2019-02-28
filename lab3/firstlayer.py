@@ -20,9 +20,16 @@ class FirstLayer:
         self.threshold = threshold
         self.inhibit_k = inhibit_k
         
+        #this stores the spikes which were inhibited laterally
         self.inhibited_spikes = np.full(shape=(18), fill_value = False)
 
+        # this returns the current number of spikes which may pass in lateral inhibition
+        # for example, if there are spikes at time t=0, 1, 2, 3, 4, 5, and the inhibition
+        # window is the entire volley, at time 3, curr_winner_count will be 3.
         self.curr_winner_count = 0
+
+        # this is the number of time steps remaining before the inhibition 
+        # window closes and resets
         self.remaining_inhibition_time = 0
 
     # Preprocesses the raw data with a filter
@@ -75,28 +82,51 @@ class FirstLayer:
         '''
         spikes = self.spikes
 
+        # this array stores the indices of potential winning neurons
+        # that may pass lateral inhibition
         potential_winners = np.array(np.where(spikes == 0)[0])
-        old_spikes = np.copy(spikes)
-        out = np.copy(spikes)
 
+        old_spikes = np.copy(spikes) #copying the spikes to some temp variable
+        out = np.copy(spikes) # out is the output of winner take all
+
+        # if the window has not been set yet, then the remaining inhibition
+        # time will be zero. once a spike occurs and the window has not been set,
+        # then the inhibition time counter will be set to the size of the window
         if self.remaining_inhibition_time == 0 and np.sum(spikes == 0) > 0:
           self.curr_winner_count = 0
           self.remaining_inhibition_time = LI_WINDOW
         else:
+          #decrement the counter for lateral inhibition time
           self.remaining_inhibition_time -= 1
         
-        random_losers = np.array([])
+        random_losers = np.array([]) #stores the spike indices that will be set to no spike
 
-        
+        # indicates the number of remaining winners possible as the total acceptable winners
+        # minus the current number of accepted winners
         winners_left = num_winners - self.curr_winner_count
+
+        # indicates the number of winners selected from the potential winners
         winners_selected = min(winners_left, potential_winners.shape[0])
+
+        # increments the accepted winners count
         self.curr_winner_count += winners_selected
         if potential_winners.shape[0]:
+
+          #shuffles the potential winners
           np.random.shuffle(potential_winners)
+
+          # subindexes the array to section off the loser indices
           random_losers = potential_winners[winners_selected:]
+
+          # sets the output given the loser indices to -1
           out[random_losers] = -1
         
+        # sets the inhibited spike array based on if a neuron was inhibited
         self.inhibited_spikes[(old_spikes == 0) & (out == -1)] = True
+
+        # updates self.spikes
         self.spikes = np.copy(out)
+
+        # winners is the indices for the winners
         winners = np.array(np.where(self.spikes == 0))
         return (out, winners)
