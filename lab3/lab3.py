@@ -6,9 +6,6 @@ import layer as layer
 from filters import OffCenterFilter, OnCenterFilter
 import csv
 
-# Lateral inhibition window size
-LI_WINDOW = 3
-
 mnist = fetch_mldata('MNIST original')
 N, _ = mnist.data.shape
 
@@ -30,13 +27,13 @@ with open('spiketimes.csv', 'w', newline='') as csvfile:
     i = permutation[itr]
     layer1.raw_data = mnist.square_data[i]
     layer1.generate_spikes(OnCenterFilter, OffCenterFilter)
-    li_index = []
 
     for j in range(num_iterations):
       layer1.wta(8,8)
 
       layer2.generate_spikes()
       layer2.STDP()
+      print(layer2.spikes)
 
       for k in range(layer2.spikes.shape[0]):
         if (layer2.spikes[k] == 0):
@@ -51,5 +48,5 @@ with open('spiketimes.csv', 'w', newline='') as csvfile:
       layer2.increment_time()
     layer1.reset()
     layer2.reset()
-    print(results)
+    #print(results)
     #print("\rComplete: ", i+1, end="")
