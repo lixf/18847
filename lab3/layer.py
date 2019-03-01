@@ -18,6 +18,7 @@ import matplotlib.pyplot as plt
 # firing happens immediately.  Therefore, in local time, the spike
 # will always be 0 and therefore self.spikes will always be either
 # -1 or 0, where -1 is no spike and 0 is a spike happenning right now.
+
 class Layer():
     def __init__(self, layer_id, num_neurons, prev_layer, threshold):  
         self.layer_id = layer_id
