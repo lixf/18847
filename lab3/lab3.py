@@ -10,11 +10,18 @@ import time
 
 def calculate_metrics(data, target, receptive_field):
   # Structure of the TNN
+
+  #threshold indicates the highest filter spiketime that can be condsidered
   layer1 = firstlayer.FirstLayer(layer_id=1, training_raw_data=data[0], threshold=8)
+
+  # threshold indicates the max neuron sum before firing
   layer2 = layer.Layer(layer_id=2, num_neurons=16, prev_layer=layer1, threshold=15)
 
+  # number of time steps for each image
   num_iterations = 9
   results = np.zeros(shape=(16, 10))
+
+  # selects 10000 random images for training and testing
   permutation = np.random.permutation(len(data))
   training = permutation[:10000]
   test = permutation[10000:20000]
@@ -27,11 +34,17 @@ def calculate_metrics(data, target, receptive_field):
     layer1.raw_data = data[i]
     layer1.generate_spikes(OnCenterFilter, OffCenterFilter, receptive_field)
   
+    #for each image go through all time steps
     for j in range(num_iterations):
+
+      #feedforward inhibitionn with max 3 spikes
       layer1.feedforward_inhibition(3)
-  
+      
       layer2.generate_spikes()
+
+      # only select one of the 8 spikes
       layer2.wta(1, 8)
+
       layer2.stdp_update_rule()             
       layer1.increment_time()
       layer2.increment_time()
@@ -43,17 +56,22 @@ def calculate_metrics(data, target, receptive_field):
   print("Training time: ", end_time - start_time, "s");
 
   start_time = time.time()
+
+  # testing phase
   for itr in range(len(test)):
     i = permutation[itr]
     layer1.raw_data = data[i]
     layer1.generate_spikes(OnCenterFilter, OffCenterFilter, receptive_field)
   
+    #for each image, go through all the time steps
     for j in range(num_iterations):
+      # max 3 spikes in first layer
       layer1.feedforward_inhibition(3)
   
       layer2.generate_spikes()
       layer2.wta(1, 8)
   
+      # result array is num_patterns x num_labels, where value is number of occurrences
       for k in range(layer2.spikes.shape[0]):
         if (layer2.spikes[k] == 0):
           image_number = i
