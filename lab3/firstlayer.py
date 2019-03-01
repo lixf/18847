@@ -9,19 +9,17 @@ from scipy import signal
 # After each time iteration, increment_time is called to update the local spike times.
 
 # The threshold value is right above the cutoff point for the highest value of spike time.
-# Feedforward inhibition is implemented by limiting the number of spikes in a given
-# timestep to inhibit_k.
+
 class FirstLayer: 
-    def __init__ (self, layer_id, training_raw_data, threshold, inhibit_k):
+    def __init__ (self, layer_id, training_raw_data, threshold):
         self.layer_id = layer_id
         self.raw_data = training_raw_data
-        self.spikes=np.full(18, -1)
+        self.spikes=np.full(8, -1)
         self.num_neurons = self.spikes.shape[0]
         self.threshold = threshold
-        self.inhibit_k = inhibit_k
         
         #this stores the spikes which were inhibited laterally
-        self.inhibited_spikes = np.full(shape=(18), fill_value = False)
+        self.inhibited_spikes = np.full(shape=(8), fill_value = False)
 
         # this returns the current number of spikes which may pass in lateral inhibition
         # for example, if there are spikes at time t=0, 1, 2, 3, 4, 5, and the inhibition
@@ -49,17 +47,19 @@ class FirstLayer:
         self.curr_winner_count = 0
         self.remaining_inhibition_time = 0
 
-    def generate_spikes(self,filter1, filter2):
+    def generate_spikes(self,filter1, filter2, starting_point):
 
         # Generates spikes with values ranging from 0 to the threshold
         # The spike with value 0 will occur immediately, while the spikes
         # with higher values will occur later.
 
         # Applies 2 filters to a receptive field of 3x3
-        preprocessed1 = self.preprocess(filter1)[12:15, 12:15]
-        preprocessed2 = self.preprocess(filter2)[12:15, 12:15]
+        start_x = starting_point[0]
+        start_y = starting_point[1]
+        preprocessed1 = self.preprocess(filter1)[start_x:start_x+2, start_y:start_y+2]
+        preprocessed2 = self.preprocess(filter2)[start_x:start_x+2, start_y:start_y+2]
 
-        # Combines the two filters to be contained within 18 neurons
+        # Combines the two filters to be contained within 8 neurons
 
         preprocessed = np.concatenate((preprocessed1, preprocessed2), axis=0)
         # Makes large difference result in early spike and small difference in late spike
@@ -73,7 +73,13 @@ class FirstLayer:
     def increment_time(self):
         # Updates the spike time value with each time iteration
         self.spikes[self.spikes > -1] -= 1
-        #self.feedforward_inhibition(self.inhibit_k)
+
+    def feedforward_inhibition(self, num_winners):
+        potential_winners = self.spikes >= 0
+        if np.sum(potential_winners) > num_winners:
+          self.spikes[self.spikes >= 0] = -1
+
+        
     def wta(self, num_winners, LI_WINDOW):
         '''
         Performs Winner-Take-All inhibition on the spikes

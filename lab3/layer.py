@@ -160,7 +160,7 @@ class Layer():
         winners = np.array(np.where(self.spikes == 0))
         return (out, winners)
 
-    def STDP(self):
+    def stdp_update_rule(self):
       input_spikes = self.prev_layer.spikes == 0
       curr_spikes = self.spikes == 0
 
@@ -173,6 +173,7 @@ class Layer():
       no_input_output = np.outer(input_spikes == False, curr_spikes == True)
 
       # self.W indixes these 2d arrays and performs stdp 
+      # the values for the weights to increase and decrease are manually picked
       self.W[input_output == True] = np.minimum(10,self.W[input_output == True] + 1)
       self.W[input_no_output == True] = np.minimum(10,self.W[input_no_output == True] + .05)
       self.W[input_inhibited_output == True] = np.minimum(10,self.W[input_inhibited_output == True] - .05)
