@@ -1,0 +1,43 @@
+################################################################################
+# Common Synopsys Variables (Tool Suite for Verilog)
+################################################################################
+
+# The top-level directory for the Synopsys tools
+#export SYNOPSYS_HOME="/afs/ece.cmu.edu/support/synopsys/synopsys.release"
+export SYNOPSYS_HOME="/usr/local/synopsys"
+
+# The license file for the Synopsys tools
+export SYNOPSYS_LICENSE="/afs/ece.cmu.edu/support/synopsys/license.dat"
+export LM_LICENSE_FILE="${LM_LICENSE_FILE}:${SYNOPSYS_LICENSE}"
+
+################################################################################
+# Synopsys Verilog Compiler Simulator (VCS): Verilog Code Simulator
+################################################################################
+
+# The VCS version and its top-level home directory
+export VCS_VERSION="vcs-mx_vK-2015.09"
+export VCS_HOME="${SYNOPSYS_HOME}/${VCS_VERSION}"
+
+# Setup VCS to run on a 64-bit Linux system
+export VCS_ARCH_OVERRIDE="linux"
+export VCS_MODE_FLAG=64
+export VCS_TARGET_ARCH="amd64"
+
+# Ignore the "license expired" warning
+export VCS_LIC_EXPIRE_WARNING=0
+
+# Add the VCS tools to the PATH, and their manpages to the MANPATH
+export PATH="${PATH}:${VCS_HOME}/bin"
+export MANPATH="${MANPATH}:${VCS_HOME}/doc/man"
+
+################################################################################
+# Synopsys Design Compiler (DC): Verilog Code Synthesizer
+################################################################################
+
+# The DC version and its top-level home directory
+export DC_VERSION="syn-vJ-2014.09-SP4"
+export DC_HOME="${SYNOPSYS_HOME}/${DC_VERSION}"
+
+# Add the DC tools to the PATH, and their manpages to the MANPATH
+export PATH="${PATH}:${DC_HOME}/bin"
+export MANPATH="${MANPATH}:${DC_HOME}/doc/syn/man"
