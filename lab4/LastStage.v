@@ -3,12 +3,11 @@ module LastStage #(parameter N = 16)(in, out);
     output [N-1:0] out;
 
 
-    genvar i, layer_idx, group_idx, inst_idx;
-    genvar gpl, bpg, stride, beginning, idx_start, idx_end, inc;
+    genvar i, group_idx, inst_idx;
+    integer gpl, bpg, stride, beginning, idx_start, idx_end, inc, layer_idx;
 
 
-    wire [N-1:0] connect [4 : 0];
-
+    wire [N-1:0] connect [$clog2(N) : 0];
 
     generate
     //always @(*) begin
@@ -36,7 +35,6 @@ module LastStage #(parameter N = 16)(in, out);
     endgenerate
 
 
-
     assign connect[0] = in;
-    assign out = connect[4];
+    assign out = connect[$clog2(N)];
 endmodule
