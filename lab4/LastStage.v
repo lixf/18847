@@ -36,7 +36,6 @@ module LastStage #(parameter N = 16)(in, out);
     //end
     endgenerate
 
-
     assign connect[0] = in;
     assign out = connect[$clog2(N)];
 endmodule
