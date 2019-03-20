@@ -35,21 +35,6 @@ module Bitonic_sort8(in, out);
 
 
 
-    //3 groups of 4
-    //=> log2(N) of N/2
-
-
-    for (int i=N/2; i>0; i /= 2)//i=2, 1, 0
-    {
-        //int stride = 2^i;
-        //int inc = (N/2)/stride;
-        for (int j=i; j>0; j++)
-        {
-            
-        }
-    }
 endmodule
 
 
-
-module LastStage()
