@@ -1,3 +1,5 @@
+`timescale 1ns / 1ps
+
 module LastStage #(parameter N = 16)(in, out);
     input [N-1:0] in;
     output [N-1:0] out;
@@ -10,7 +12,7 @@ module LastStage #(parameter N = 16)(in, out);
     wire [N-1:0] connect [$clog2(N) : 0];
 
     generate
-    //always @(*) begin
+    //initial begin
         assign layer_idx = 0;
         for (i = N/2; i > 0; i = i/2) begin : loop1
             assign gpl = (N/2)/i;
