@@ -8,9 +8,14 @@ module Bitonic_sort8(in, out);
     wire [7:0] BtoC;
     wire [7:0] CtoD;
 
+    //Ascending and descending instances
     Bitonic_sort4 a0(.in(in[3:0]), .out(AtoB[3:0]));
     Bitonic_sort4 a1(.in(in[7:4]), .out({AtoB[4], AtoB[5], AtoB[6], AtoB[7]}));
 
+
+
+
+    //Last Stage
     Bitonic_sort2 b0(.a(AtoB[0]), .b(AtoB[4]), .min(BtoC[0]), .max(BtoC[4]));
     Bitonic_sort2 b1(.a(AtoB[1]), .b(AtoB[5]), .min(BtoC[1]), .max(BtoC[5]));
     Bitonic_sort2 b2(.a(AtoB[2]), .b(AtoB[6]), .min(BtoC[2]), .max(BtoC[6]));
@@ -28,5 +33,23 @@ module Bitonic_sort8(in, out);
     Bitonic_sort2 d2(.a(CtoD[4]), .b(CtoD[5]), .min(out[4]), .max(out[5]));
     Bitonic_sort2 d3(.a(CtoD[6]), .b(CtoD[7]), .min(out[6]), .max(out[7]));    
 
+
+
+    //3 groups of 4
+    //=> log2(N) of N/2
+
+
+    for (int i=N/2; i>0; i /= 2)//i=2, 1, 0
+    {
+        //int stride = 2^i;
+        //int inc = (N/2)/stride;
+        for (int j=i; j>0; j++)
+        {
+            
+        }
+    }
 endmodule
 
+
+
+module LastStage()
