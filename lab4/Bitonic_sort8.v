@@ -5,16 +5,17 @@ module Bitonic_sort8(in, out);
     output [7:0] out;
 
     wire [7:0] AtoB;
-    wire [7:0] BtoC;
-    wire [7:0] CtoD;
+    //wire [7:0] BtoC;
+    //wire [7:0] CtoD;
 
     //Ascending and descending instances
     Bitonic_sort4 a0(.in(in[3:0]), .out(AtoB[3:0]));
     Bitonic_sort4 a1(.in(in[7:4]), .out({AtoB[4], AtoB[5], AtoB[6], AtoB[7]}));
 
 
+    LastStage #(8) l0(.in(AtoB), .out(out));
 
-
+    /*
     //Last Stage
     Bitonic_sort2 b0(.a(AtoB[0]), .b(AtoB[4]), .min(BtoC[0]), .max(BtoC[4]));
     Bitonic_sort2 b1(.a(AtoB[1]), .b(AtoB[5]), .min(BtoC[1]), .max(BtoC[5]));
@@ -32,7 +33,7 @@ module Bitonic_sort8(in, out);
     Bitonic_sort2 d1(.a(CtoD[2]), .b(CtoD[3]), .min(out[2]), .max(out[3]));
     Bitonic_sort2 d2(.a(CtoD[4]), .b(CtoD[5]), .min(out[4]), .max(out[5]));
     Bitonic_sort2 d3(.a(CtoD[6]), .b(CtoD[7]), .min(out[6]), .max(out[7]));    
-
+    */
 
 
 endmodule

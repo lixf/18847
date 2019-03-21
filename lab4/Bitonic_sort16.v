@@ -5,9 +5,9 @@ module Bitonic_sort16(in, out);
     output [15:0] out;
 
     wire [15:0] AtoB;
-    wire [15:0] BtoC;
-    wire [15:0] CtoD;
-    wire [15:0] DtoE;
+    //wire [15:0] BtoC;
+    //wire [15:0] CtoD;
+    //wire [15:0] DtoE;
 
     Bitonic_sort8 a0(.in(in[7:0]), .out(AtoB[7:0]));
     Bitonic_sort8 a1(.in(in[15:8]), 

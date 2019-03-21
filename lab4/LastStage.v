@@ -6,7 +6,7 @@ module LastStage #(parameter N = 16)(in, out);
 
 
     genvar i, group_idx, inst_idx;
-    integer gpl, bpg, stride, beginning, idx_start, idx_end, inc, layer_idx;
+    //integer gpl, bpg, stride, beginning, idx_start, idx_end, inc, layer_idx;
 
 
     wire [N-1:0] connect [$clog2(N) : 0];
@@ -27,7 +27,7 @@ module LastStage #(parameter N = 16)(in, out);
                     //assign inc = $clog2((N/2)/i)+1'b1;
 
                     Bitonic_sort2 u0(.a(connect[$clog2((N/2)/i)  ][(2*i)*group_idx + inst_idx]    ), 
-				     .b(connect[$clog2((N/2)/i)  ][(2*i)*group_idx + inst_idx + i]), 
+				                     .b(connect[$clog2((N/2)/i)  ][(2*i)*group_idx + inst_idx + i]), 
                                    .max(connect[$clog2((N/2)/i)+1][(2*i)*group_idx + inst_idx + i]), 
                                    .min(connect[$clog2((N/2)/i)+1][(2*i)*group_idx + inst_idx]    ));
                 end 
