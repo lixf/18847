@@ -13,25 +13,26 @@ module LastStage #(parameter N = 16)(in, out);
 
     generate
     //initial begin
-        assign layer_idx = 0;
+        //assign layer_idx = 0;
         for (i = N/2; i > 0; i = i/2) begin : loop1
-            assign gpl = (N/2)/i;
-            assign stride = i;
+            //assign gpl = (N/2)/i;
+            //assign stride = i;
             for (group_idx = 0; group_idx < (N/2)/i; group_idx = group_idx + 1) begin : loop2
-                assign beginning = (2*stride)*group_idx;
-                assign bpg = (N/2)/gpl;
+                //assign beginning = (2*i)*group_idx;
+                //assign bpg = (N/2)/((N/2)/i);
     
                 for (inst_idx = 0; inst_idx < i; inst_idx = inst_idx + 1) begin : loop3
-                    assign idx_start = beginning + inst_idx;
-                    assign idx_end = idx_start + stride;
-                    assign inc = layer_idx+1'b1;
+                    //assign idx_start = (2*i)*group_idx + inst_idx;
+                    //assign idx_end = (2*i)*group_idx + inst_idx + i;
+                    //assign inc = $clog2((N/2)/i)+1'b1;
 
-                    Bitonic_sort2 u0(.a(connect[layer_idx][idx_start]), .b(connect[layer_idx][idx_end]), 
-                                     .max(connect[layer_idx+1][idx_end]), 
-                                     .min(connect[inc][idx_start]));
+                    Bitonic_sort2 u0(.a(connect[$clog2((N/2)/i)  ][(2*i)*group_idx + inst_idx]    ), 
+				     .b(connect[$clog2((N/2)/i)  ][(2*i)*group_idx + inst_idx + i]), 
+                                   .max(connect[$clog2((N/2)/i)+1][(2*i)*group_idx + inst_idx + i]), 
+                                   .min(connect[$clog2((N/2)/i)+1][(2*i)*group_idx + inst_idx]    ));
                 end 
             end
-            assign layer_idx = layer_idx + 1;
+            //assign layer_idx = layer_idx + 1;
         end
     //end
     endgenerate

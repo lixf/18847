@@ -14,8 +14,9 @@ module Bitonic_sort16(in, out);
                      .out({AtoB[8], AtoB[9], AtoB[10], AtoB[11], 
                            AtoB[12], AtoB[13], AtoB[14], AtoB[15]}));
 
+    LastStage #(16) l0(.in(AtoB), .out(out));
 
-
+/*
     Bitonic_sort2 b0(.a(AtoB[0]), .b(AtoB[8]), .min(BtoC[0]), .max(BtoC[8]));
     Bitonic_sort2 b1(.a(AtoB[1]), .b(AtoB[9]), .min(BtoC[1]), .max(BtoC[9]));
     Bitonic_sort2 b2(.a(AtoB[2]), .b(AtoB[10]), .min(BtoC[2]), .max(BtoC[10]));
@@ -63,5 +64,5 @@ module Bitonic_sort16(in, out);
     Bitonic_sort2 e5(.a(DtoE[10]), .b(DtoE[11]), .min(out[10]), .max(out[11]));
     Bitonic_sort2 e6(.a(DtoE[12]), .b(DtoE[13]), .min(out[12]), .max(out[13]));
     Bitonic_sort2 e7(.a(DtoE[14]), .b(DtoE[15]), .min(out[14]), .max(out[15]));
-
+*/
 endmodule
