@@ -1,0 +1,108 @@
+ 
+****************************************
+Report : timing
+        -path full
+        -delay max
+        -max_paths 1
+        -sort_by group
+Design : bitonic_sort_16
+Version: J-2014.09-SP4
+Date   : Thu Mar 21 21:59:16 2019
+****************************************
+
+Operating Conditions: typical   Library: NangateOpenCellLibrary
+Wire Load Model Mode: top
+
+  Startpoint: raw_in[0] (input port)
+  Endpoint: sorted_out[0]
+            (output port)
+  Path Group: (none)
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  bitonic_sort_16    5K_hvratio_1_1        NangateOpenCellLibrary
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  input external delay                                    0.00       0.00 r
+  raw_in[0] (in)                                          0.00       0.00 r
+  a0/in[0] (bitonic_sort_8_0)                             0.00       0.00 r
+  a0/a0/in[0] (bitonic_sort_4_0)                          0.00       0.00 r
+  a0/a0/a0/a (bitonic_sort_2_48)                          0.00       0.00 r
+  a0/a0/a0/U2/ZN (INV_X1)                                 0.02       0.02 f
+  a0/a0/a0/U1/ZN (NOR2_X1)                                0.04       0.06 r
+  a0/a0/a0/min (bitonic_sort_2_48)                        0.00       0.06 r
+  a0/a0/l0/in[0] (LastStage_N4_0)                         0.00       0.06 r
+  a0/a0/l0/loop1[2].loop2[0].loop3[0].u0/a (bitonic_sort_2_16)
+                                                          0.00       0.06 r
+  a0/a0/l0/loop1[2].loop2[0].loop3[0].u0/U3/ZN (INV_X1)
+                                                          0.03       0.09 f
+  a0/a0/l0/loop1[2].loop2[0].loop3[0].u0/U1/ZN (NOR2_X1)
+                                                          0.04       0.13 r
+  a0/a0/l0/loop1[2].loop2[0].loop3[0].u0/min (bitonic_sort_2_16)
+                                                          0.00       0.13 r
+  a0/a0/l0/loop1[1].loop2[0].loop3[0].u0/a (bitonic_sort_2_14)
+                                                          0.00       0.13 r
+  a0/a0/l0/loop1[1].loop2[0].loop3[0].u0/U2/ZN (INV_X1)
+                                                          0.03       0.16 f
+  a0/a0/l0/loop1[1].loop2[0].loop3[0].u0/U1/ZN (NOR2_X1)
+                                                          0.04       0.20 r
+  a0/a0/l0/loop1[1].loop2[0].loop3[0].u0/min (bitonic_sort_2_14)
+                                                          0.00       0.20 r
+  a0/a0/l0/out[0] (LastStage_N4_0)                        0.00       0.20 r
+  a0/a0/out[0] (bitonic_sort_4_0)                         0.00       0.20 r
+  a0/l0/in[0] (LastStage_N8_0)                            0.00       0.20 r
+  a0/l0/loop1[4].loop2[0].loop3[0].u0/a (bitonic_sort_2_44)
+                                                          0.00       0.20 r
+  a0/l0/loop1[4].loop2[0].loop3[0].u0/U3/ZN (INV_X1)      0.03       0.23 f
+  a0/l0/loop1[4].loop2[0].loop3[0].u0/U1/ZN (NOR2_X1)     0.04       0.27 r
+  a0/l0/loop1[4].loop2[0].loop3[0].u0/min (bitonic_sort_2_44)
+                                                          0.00       0.27 r
+  a0/l0/loop1[2].loop2[0].loop3[0].u0/a (bitonic_sort_2_40)
+                                                          0.00       0.27 r
+  a0/l0/loop1[2].loop2[0].loop3[0].u0/U2/ZN (INV_X1)      0.03       0.30 f
+  a0/l0/loop1[2].loop2[0].loop3[0].u0/U1/ZN (NOR2_X1)     0.04       0.34 r
+  a0/l0/loop1[2].loop2[0].loop3[0].u0/min (bitonic_sort_2_40)
+                                                          0.00       0.34 r
+  a0/l0/loop1[1].loop2[0].loop3[0].u0/a (bitonic_sort_2_36)
+                                                          0.00       0.34 r
+  a0/l0/loop1[1].loop2[0].loop3[0].u0/U2/ZN (INV_X1)      0.03       0.36 f
+  a0/l0/loop1[1].loop2[0].loop3[0].u0/U1/ZN (NOR2_X1)     0.04       0.40 r
+  a0/l0/loop1[1].loop2[0].loop3[0].u0/min (bitonic_sort_2_36)
+                                                          0.00       0.40 r
+  a0/l0/out[0] (LastStage_N8_0)                           0.00       0.40 r
+  a0/out[0] (bitonic_sort_8_0)                            0.00       0.40 r
+  l0/in[0] (LastStage_N16)                                0.00       0.40 r
+  l0/loop1[8].loop2[0].loop3[0].u0/a (bitonic_sort_2_0)
+                                                          0.00       0.40 r
+  l0/loop1[8].loop2[0].loop3[0].u0/U3/ZN (INV_X1)         0.03       0.43 f
+  l0/loop1[8].loop2[0].loop3[0].u0/U1/ZN (NOR2_X1)        0.04       0.47 r
+  l0/loop1[8].loop2[0].loop3[0].u0/min (bitonic_sort_2_0)
+                                                          0.00       0.47 r
+  l0/loop1[4].loop2[0].loop3[0].u0/a (bitonic_sort_2_72)
+                                                          0.00       0.47 r
+  l0/loop1[4].loop2[0].loop3[0].u0/U2/ZN (INV_X1)         0.03       0.50 f
+  l0/loop1[4].loop2[0].loop3[0].u0/U1/ZN (NOR2_X1)        0.04       0.54 r
+  l0/loop1[4].loop2[0].loop3[0].u0/min (bitonic_sort_2_72)
+                                                          0.00       0.54 r
+  l0/loop1[2].loop2[0].loop3[0].u0/a (bitonic_sort_2_64)
+                                                          0.00       0.54 r
+  l0/loop1[2].loop2[0].loop3[0].u0/U2/ZN (INV_X1)         0.03       0.57 f
+  l0/loop1[2].loop2[0].loop3[0].u0/U1/ZN (NOR2_X1)        0.04       0.61 r
+  l0/loop1[2].loop2[0].loop3[0].u0/min (bitonic_sort_2_64)
+                                                          0.00       0.61 r
+  l0/loop1[1].loop2[0].loop3[0].u0/a (bitonic_sort_2_56)
+                                                          0.00       0.61 r
+  l0/loop1[1].loop2[0].loop3[0].u0/U2/ZN (INV_X1)         0.03       0.64 f
+  l0/loop1[1].loop2[0].loop3[0].u0/U1/ZN (NOR2_X1)        0.03       0.67 r
+  l0/loop1[1].loop2[0].loop3[0].u0/min (bitonic_sort_2_56)
+                                                          0.00       0.67 r
+  l0/out[0] (LastStage_N16)                               0.00       0.67 r
+  sorted_out[0] (out)                                     0.00       0.67 r
+  data arrival time                                                  0.67
+  --------------------------------------------------------------------------
+  (Path is unconstrained)
+
+
+1
