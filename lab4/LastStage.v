@@ -26,7 +26,7 @@ module LastStage #(parameter N = 16)(in, out);
                     //assign idx_end = (2*i)*group_idx + inst_idx + i;
                     //assign inc = $clog2((N/2)/i)+1'b1;
 
-                    Bitonic_sort2 u0(.a(connect[$clog2((N/2)/i)  ][(2*i)*group_idx + inst_idx]    ), 
+                    bitonic_sort_2 u0(.a(connect[$clog2((N/2)/i)  ][(2*i)*group_idx + inst_idx]    ), 
 				                     .b(connect[$clog2((N/2)/i)  ][(2*i)*group_idx + inst_idx + i]), 
                                    .max(connect[$clog2((N/2)/i)+1][(2*i)*group_idx + inst_idx + i]), 
                                    .min(connect[$clog2((N/2)/i)+1][(2*i)*group_idx + inst_idx]    ));

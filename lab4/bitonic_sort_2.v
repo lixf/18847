@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-module Bitonic_sort2(a, b, max, min);
+module bitonic_sort_2(a, b, max, min);
     input a;
     input b;
     output max;

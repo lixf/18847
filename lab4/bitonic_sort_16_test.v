@@ -12,7 +12,7 @@ module bitonic_sort_tb;
     reg [15:0] raw_in;
     wire [15:0] sorted_out;
 
-    Bitonic_sort16 DUT (.out(sorted_out), .in(raw_in));
+    bitonic_sort_16 DUT (.sorted_out(sorted_out), .raw_in(raw_in));
 
     initial
     begin
