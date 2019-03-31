@@ -161,9 +161,16 @@ class Layer():
         winners = np.array(np.where(self.spikes == 0))
         return (out, winners)
 
-    def stdp_update_rule(self):
+    def stdp_update_rule(self, parameters=None):
       input_spikes = self.prev_layer.spikes == 0
       curr_spikes = self.spikes == 0
+      input_output_weight = 0.5
+      input_no_output_weight = 0.5
+      input_inhibited_output_weight = 0.5
+      no_input_output_weight = 0.5
+
+      if parameters:
+        input_output_weight, input_no_output_weight, input_inhibited_output_weight, no_input_output_weight = parameters
 
       # these are 2d arrays storing boolean values for the condition of the input and
       # output arrays. for example, input_output[i,j] is true if the input neuron i
@@ -175,9 +182,9 @@ class Layer():
 
       # self.W indixes these 2d arrays and performs stdp 
       # the values for the weights to increase and decrease are manually picked
-      self.W[input_output == True] = np.minimum(10,self.W[input_output == True] + 1)
-      self.W[input_no_output == True] = np.minimum(10,self.W[input_no_output == True] + .05)
-      self.W[input_inhibited_output == True] = np.minimum(10,self.W[input_inhibited_output == True] - .05)
+      self.W[input_output == True] = np.minimum(10,self.W[input_output == True] + input_output_weight)
+      self.W[input_no_output == True] = np.minimum(10,self.W[input_no_output == True] + input_no_output_weight)
+      self.W[input_inhibited_output == True] = np.maximum(0,self.W[input_inhibited_output == True] - input_inhibited_output_weight)
       #self.W[no_input_output == True] = 0
-      self.W[no_input_output == True] = np.maximum(0,self.W[no_input_output == True] - 1)
+      self.W[no_input_output == True] = np.maximum(0,self.W[no_input_output == True] - no_input_output_weight)
 

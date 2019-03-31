@@ -11,13 +11,13 @@ from scipy import signal
 # The threshold value is right above the cutoff point for the highest value of spike time.
 
 class FirstLayer: 
-    def __init__ (self, layer_id, training_raw_data, threshold):
+    def __init__ (self, layer_id, training_raw_data, threshold, receptive_field_length=2):
         self.layer_id = layer_id
         self.raw_data = training_raw_data
-        self.spikes=np.full(8, -1)
+        self.spikes=np.full((receptive_field_length**2)*2, -1)
         self.num_neurons = self.spikes.shape[0]
         self.threshold = threshold
-        
+        self.receptive_field_length = receptive_field_length
         #this stores the spikes which were inhibited laterally
         self.inhibited_spikes = np.full(shape=(8), fill_value = False)
 
@@ -47,7 +47,7 @@ class FirstLayer:
         self.curr_winner_count = 0
         self.remaining_inhibition_time = 0
 
-    def generate_spikes(self,filter1, filter2, starting_point):
+    def generate_spikes(self,filter1, filter2, starting_point, size):
 
         # Generates spikes with values ranging from 0 to the threshold
         # The spike with value 0 will occur immediately, while the spikes
@@ -56,8 +56,8 @@ class FirstLayer:
         # Applies 2 filters to a receptive field of 3x3
         start_x = starting_point[0]
         start_y = starting_point[1]
-        preprocessed1 = self.preprocess(filter1)[start_x:start_x+2, start_y:start_y+2]
-        preprocessed2 = self.preprocess(filter2)[start_x:start_x+2, start_y:start_y+2]
+        preprocessed1 = self.preprocess(filter1)[start_x:start_x+self.receptive_field_length, start_y:start_y+self.receptive_field_length]
+        preprocessed2 = self.preprocess(filter2)[start_x:start_x+self.receptive_field_length, start_y:start_y+self.receptive_field_length]
 
         # Combines the two filters to be contained within 8 neurons
 
