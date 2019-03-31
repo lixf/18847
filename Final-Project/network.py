@@ -13,14 +13,14 @@ def evaluate(layer1, layer2, data, target, receptive_field, parameters=None, isT
 
   for i in range(len(data)):
     layer1.raw_data = data[i]
-    layer1.generate_spikes(OnCenterFilter, OffCenterFilter, receptive_field, 2)
+    layer1.generate_spikes(OnCenterFilter, OffCenterFilter, receptive_field)
 
     #print(i)
     #for each image go through all time steps
     for j in range(8):
 
       #feedforward inhibitionn with max 4 spikes
-      layer1.feedforward_inhibition(4)
+      #layer1.feedforward_inhibition(16)
 
       layer2.generate_spikes()
 
@@ -34,6 +34,8 @@ def evaluate(layer1, layer2, data, target, receptive_field, parameters=None, isT
       if (isTraining):
         # result array is num_patterns x num_labels, where value is number of
         # occurrences
+
+
         for k in range(layer2.spikes.shape[0]):
           if (layer2.spikes[k] == 0):
             training_results[k, int(target[i])]+=1
@@ -67,10 +69,10 @@ def calculate_metrics(data, target, receptive_field, parameters=None, num_data=2
   num_outputs = 10
 
   #threshold indicates the highest filter spiketime that can be condsidered
-  layer1 = firstlayer.FirstLayer(layer_id=1, training_raw_data=data[0], threshold=8)
+  layer1 = firstlayer.FirstLayer(layer_id=1, training_raw_data=data[0], threshold=8, receptive_field_length = 28)
 
   # threshold indicates the max neuron sum before firing
-  layer2 = layer.Layer(layer_id=2, num_neurons=num_outputs, prev_layer=layer1, threshold=25)
+  layer2 = layer.Layer(layer_id=2, num_neurons=num_outputs, prev_layer=layer1, threshold=1000)
 
   # selects 10000 random images for training and testing
   permutation = np.random.permutation(len(data))
@@ -109,8 +111,8 @@ input_no_output_weight = .05
 no_input_output_weight = .2
 input_inhibited_output_weight = .05
 parameters = [input_output_weight, input_no_output_weight, input_inhibited_output_weight, no_input_output_weight]
-num_data = 6000
-training_results, test_results  = calculate_metrics(mnist.square_data, mnist.target, (12,12), parameters, num_data)
+num_data = 4000
+training_results, test_results  = calculate_metrics(mnist.square_data, mnist.target, (0,0), parameters, num_data)
 coverage = np.sum(test_results[0]) / (num_data/2)
 print("Coverage: ", coverage)
 print("Purity: ", np.mean(np.amax(training_results, axis=1) / np.sum(training_results, axis=1)))

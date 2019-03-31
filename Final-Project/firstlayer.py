@@ -14,12 +14,13 @@ class FirstLayer:
     def __init__ (self, layer_id, training_raw_data, threshold, receptive_field_length=2):
         self.layer_id = layer_id
         self.raw_data = training_raw_data
-        self.spikes=np.full((receptive_field_length**2)*2, -1)
+        num_spikes = (receptive_field_length**2)*2
+        self.spikes=np.full(num_spikes, -1)
         self.num_neurons = self.spikes.shape[0]
         self.threshold = threshold
         self.receptive_field_length = receptive_field_length
         #this stores the spikes which were inhibited laterally
-        self.inhibited_spikes = np.full(shape=(8), fill_value = False)
+        self.inhibited_spikes = np.full(shape=(num_spikes), fill_value = False)
 
         # this returns the current number of spikes which may pass in lateral inhibition
         # for example, if there are spikes at time t=0, 1, 2, 3, 4, 5, and the inhibition
@@ -47,7 +48,7 @@ class FirstLayer:
         self.curr_winner_count = 0
         self.remaining_inhibition_time = 0
 
-    def generate_spikes(self,filter1, filter2, starting_point, size):
+    def generate_spikes(self,filter1, filter2, starting_point):
 
         # Generates spikes with values ranging from 0 to the threshold
         # The spike with value 0 will occur immediately, while the spikes
