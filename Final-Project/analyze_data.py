@@ -61,8 +61,17 @@ for i in range(28):
 plt.scatter(range(1,29), best_overall_accuracy[:, 0, 0], label='Supervised STDP')
 plt.scatter(range(1,29), best_overall_accuracy[:, 0, 1], label='Unsupervised STDP')
 plt.legend()
+plt.ylabel('Overall Accuracy')
+plt.xlabel('Receptive Field Length (px)')
+plt.title('Best Overall Accuracy vs Receptive Field Length')
+plt.show()
 
-
+plt.scatter(range(1,29), best_thresholds[:, 0], label='Supervised STDP')
+plt.scatter(range(1,29), best_thresholds[:, 1], label='Unsupervised STDP')
+plt.legend()
+plt.ylabel('Threshold')
+plt.xlabel('Receptive Field Length (px)')
+plt.title('Best Threshold vs Receptive Field Length')
 plt.show()
 
 coverage_over_thresholds = np.zeros((50, 2))
@@ -81,7 +90,7 @@ plt.legend()
 
 plt.xlabel('Threshold')
 plt.ylabel('Coverage')
-plt.title('Coverage vs Threshold for Receptive Field Lenght 28')
+plt.title('Coverage vs Threshold for Receptive Field Length 28')
 
 plt.show()
 
@@ -100,7 +109,7 @@ plt.scatter(thresholds[27,accuracy_indices2], accuracy_over_thresholds[accuracy_
 plt.legend()
 plt.ylabel('Accuracy (over successfully classified data)')
 plt.xlabel('Threshold')
-plt.title('Accuracy vs Threshold for Receptive Field Lenght 28')
+plt.title('Accuracy vs Threshold for Receptive Field Length 28')
 plt.show()
 
 overall_accuracy_over_thresholds = np.zeros((50, 2))
@@ -118,7 +127,7 @@ plt.scatter(thresholds[27,overall_accuracy_indices2], overall_accuracy_over_thre
 plt.legend()
 plt.ylabel('Overall Accuracy')
 plt.xlabel('Threshold')
-plt.title('Overall Accuracy vs Threshold for Receptive Field Lenght 28')
+plt.title('Overall Accuracy vs Threshold for Receptive Field Length 28')
 
 plt.show()
 
@@ -129,7 +138,7 @@ for i in range(28):
     purities.append(results_array[i, j, 0, 1])
     accuracies.append(results_array[i, j, 0, 2])
 
-plt.scatter(accuracies, purities, label='Puritys vs Accuracies')
+plt.scatter(accuracies, purities, label='Purities vs Accuracies')
 plt.plot(np.arange(0, 1, .1), np.arange(0, 1, .1), label='Expectation')
 
 plt.legend()

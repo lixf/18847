@@ -37,7 +37,6 @@ def evaluate(layer1, layer2, data, target, receptive_field, parameters=None, isT
         # result array is num_patterns x num_labels, where value is number of
         # occurrences
 
-
         for k in range(layer2.spikes.shape[0]):
           if (layer2.spikes[k] == 0):
             training_results[k, int(target[i])]+=1
@@ -101,16 +100,6 @@ N, _ = mnist.data.shape
 # Reshape the data to be square
 mnist.square_data = mnist.data.reshape(N,28,28)
 
-#print("Receptive Field: (4,4)")
-#results1 = calculate_metrics(mnist.square_data, mnist.target, (4, 4))
-#max1 = np.transpose(np.asarray([np.amax(results1, axis=1)]))
-#totals1 = np.transpose(np.asarray([np.sum(results1, axis=1)]))
-#coverage1 = np.transpose(np.asarray([np.sum(results1, axis=1) / 10000]))
-#purity1 = np.transpose(np.asarray([np.amax(results1, axis=1) /
-#np.sum(results1, axis=1)]))
-#final_results1 = np.concatenate((results1, max1, totals1, coverage1, purity1),
-#axis=1)
-#np.savetxt("results1.csv", final_results1, delimiter=",")
 def runExperiments():
   results_array = np.load('results.out.npy')
   for i in range(0,28):
@@ -160,13 +149,33 @@ def runExperiments():
       if low_coverage:
         break
 
+input_output_weight = 1
+input_no_output_weight = .05
+no_input_output_weight = 1
+input_inhibited_output_weight = 1
+parameters = [input_output_weight, input_no_output_weight, input_inhibited_output_weight, no_input_output_weight]
+num_data = 4000
 
-#print("Receptive Field: (12,16)")
-#results3 = calculate_metrics(mnist.square_data, mnist.target, (12,16))
-#max3 = np.transpose(np.asarray([np.amax(results3, axis=1)]))
-#totals3 = np.transpose(np.asarray([np.sum(results3, axis=1)]))
-#coverage3 = np.transpose(np.asarr
-#ay([np.sum(results3, axis=1) / 10000]))
-#purity3 = np.transpose(np.asarray([np.amax(results3, axis=1) / np.sum(results3, axis=1)]))
-#final_results3 = np.concatenate((results3,max3, totals3, coverage3, purity3), axis=1)
-#np.savetxt("results3.csv", final_results3, delimiter=",")
+print("Receptive Field: ", 28)
+print("Threshold: ", 300)
+print("isForced", True)
+
+training_results, test_results  = calculate_metrics(mnist.square_data, mnist.target, 28,300, parameters, num_data,True)
+coverage = np.sum(test_results[0]) / (num_data/2)
+purity = np.mean(np.amax(training_results, axis=1) / np.sum(training_results, axis=1))
+accuracy = np.mean(test_results[1] / test_results[0])
+print("Coverage: ", coverage)
+print("Purity: ", purity)
+print("Accuracy: ", accuracy)
+
+print("Receptive Field: ", 28)
+print("Threshold: ", 300)
+print("isForced", True)
+
+training_results, test_results  = calculate_metrics(mnist.square_data, mnist.target, 28,300, parameters, num_data,False)
+coverage = np.sum(test_results[0]) / (num_data/2)
+purity = np.mean(np.amax(training_results, axis=1) / np.sum(training_results, axis=1))
+accuracy = np.mean(test_results[1] / test_results[0])
+print("Coverage: ", coverage)
+print("Purity: ", purity)
+print("Accuracy: ", accuracy)
