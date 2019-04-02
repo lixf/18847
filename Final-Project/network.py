@@ -17,6 +17,8 @@ def evaluate(layer1, layer2, data, target, receptive_field, parameters=None, isT
 
     #print(i)
     #for each image go through all time steps
+
+    found_answer = False
     for j in range(8):
 
       #feedforward inhibitionn with max 4 spikes
@@ -39,13 +41,17 @@ def evaluate(layer1, layer2, data, target, receptive_field, parameters=None, isT
         for k in range(layer2.spikes.shape[0]):
           if (layer2.spikes[k] == 0):
             training_results[k, int(target[i])]+=1
-        layer2.stdp_update_rule(parameters)
+            layer2.stdp_update_rule(parameters)
+            found_answer = True
       else:
         for k in range(layer2.spikes.shape[0]):
           if (layer2.spikes[k] == 0):
             test_results[0,k]+=1
+            found_answer = True
             if (int(target[i]) == assignments[k]):
               test_results[1,k]+=1
+      if (found_answer):
+        break
       layer1.increment_time()
       layer2.increment_time()
     layer1.reset()
@@ -55,7 +61,7 @@ def evaluate(layer1, layer2, data, target, receptive_field, parameters=None, isT
   assignments = np.argmax(training_results, axis=1)
 
   if (isTraining):
-    training_results[training_results == 0] = 1
+    training_results[training_results == 0] = .001
     return [training_results, assignments]
   else:
     test_results[0][test_results[0] == 0] = 1
@@ -108,19 +114,19 @@ mnist.square_data = mnist.data.reshape(N,28,28)
 
 results_array = np.load('results.out.npy')
 print(results_array)
-for i in range(8,28):
+for i in range(0,28):
 
-  range1 = range(10,int((i**2)*10*.75), 5)
-  range2 = range(20, int((i**2)*10*.75), 20)
-  range3 = range(100, min(int((i**2)*10*.75), 1200), 50)
+  range1 = range(0,300, 10)
+  range2 = range(0, 500, 20)
+  range3 = range(0, 1200, 50)
   selected_range = range1
-  if (i >= 4 and i < 8):
+  if (i >= 4 and i < 12):
     selected_range = range2
-  elif (i >=8):
+  elif (i >=12):
     selected_range = range3
 
   for j in selected_range:
-    j_index = int((j - 10)/5)
+    j_index = 10 * i
     if (i >=4 and i < 8):
       j_index = int((j - 20)/20)
     elif (i >= 8):
@@ -134,11 +140,11 @@ for i in range(8,28):
       print("isForced", k == 0)
       input_output_weight = 1
       input_no_output_weight = .05
-      no_input_output_weight = .2
-      input_inhibited_output_weight = .05
+      no_input_output_weight = 1
+      input_inhibited_output_weight = 1
       parameters = [input_output_weight, input_no_output_weight, input_inhibited_output_weight, no_input_output_weight]
       num_data = 4000
-      training_results, test_results  = calculate_metrics(mnist.square_data, mnist.target, i,j, parameters, num_data,k == 0)
+      training_results, test_results  = calculate_metrics(mnist.square_data, mnist.target, i+1,j, parameters, num_data,k == 0)
       coverage = np.sum(test_results[0]) / (num_data/2)
       purity = np.mean(np.amax(training_results, axis=1) / np.sum(training_results, axis=1))
       accuracy = np.mean(test_results[1] / test_results[0])

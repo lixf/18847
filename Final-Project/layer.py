@@ -28,9 +28,12 @@ class Layer():
         self.W = np.random.random(size=(prev_layer.num_neurons, num_neurons)) * 10
         self.neuron_sums = np.zeros(shape=(num_neurons))
         self.spikes = np.full(shape=(num_neurons),fill_value=-1)
-        
+        self.contributing_spikes = np.full(shape=(self.W.shape),fill_value=False)
+
         #this stores the spikes which were inhibited laterally
         self.inhibited_spikes = np.full(shape=(num_neurons), fill_value = False)
+
+        self.old_spikes = np.full(shape=(num_neurons),fill_value=-1)
 
         # this returns the current number of spikes which may pass in lateral inhibition
         # for example, if there are spikes at time t=0, 1, 2, 3, 4, 5, and the inhibition
@@ -56,6 +59,8 @@ class Layer():
         self.remaining_inhibition_time = 0
         self.curr_volley_count = 0
         self.remaining_FF_time = 0
+        self.contributing_spikes = np.full(shape=(self.W.shape),fill_value=False)
+        self.old_spikes = np.full(shape=(self.num_neurons),fill_value=-1)
 
     
     def generate_spikes(self):
@@ -67,9 +72,13 @@ class Layer():
         W = self.W
         threshold = self.threshold
         input_spikes = (self.prev_layer.spikes == 0)
+        contributing_spikes = np.outer(input_spikes == True, np.full((self.num_neurons), True))
+
+        self.contributing_spikes = contributing_spikes | self.contributing_spikes
 
         self.neuron_sums += np.matmul(input_spikes, W)
         self.spikes[self.neuron_sums >= threshold] = 0
+        self.old_spikes = np.copy(self.spikes)
         indices = np.array(np.where(self.spikes==0)[0])
         if (indices.shape[0] > 0):
           #print("neuron sums: ",self.neuron_sums)
@@ -162,8 +171,10 @@ class Layer():
         return (out, winners)
 
     def stdp_update_rule(self, parameters=None):
-      input_spikes = self.prev_layer.spikes == 0
       curr_spikes = self.spikes == 0
+      selected_spikes = np.outer(np.full((self.prev_layer.num_neurons), True), curr_spikes == True)
+      inhibited_spikes = np.outer(np.full((self.prev_layer.num_neurons), True), self.spikes != self.old_spikes)
+
       input_output_weight = 0.5
       input_no_output_weight = 0.5
       input_inhibited_output_weight = 0.5
@@ -175,10 +186,14 @@ class Layer():
       # these are 2d arrays storing boolean values for the condition of the input and
       # output arrays. for example, input_output[i,j] is true if the input neuron i
       # is true and output neuron j is true.
-      input_output = np.outer(input_spikes == True, curr_spikes == True)
-      input_no_output = np.outer(input_spikes == True, curr_spikes == False)
-      input_inhibited_output = np.outer(input_spikes == True, self.inhibited_spikes == True)
-      no_input_output = np.outer(input_spikes == False, curr_spikes == True)
+
+
+      input_output = self.contributing_spikes & selected_spikes
+      input_no_output = self.contributing_spikes & ~selected_spikes
+      input_inhibited_output = self.contributing_spikes & inhibited_spikes
+      no_input_output = ~self.contributing_spikes & selected_spikes
+
+      #print(self.W)
 
       # self.W indixes these 2d arrays and performs stdp 
       # the values for the weights to increase and decrease are manually picked
