@@ -2,27 +2,26 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 results_array = np.load('results.out.npy')
-
 def calculateThresholds():
   threshold_values = np.zeros((28, 50))
   
   for i in range(28):
-    range1 = range(10,int((i**2)*10*.75), 5)
-    range2 = range(20, int((i**2)*10*.75), 20)
-    range3 = range(100, min(int((i**2)*10*.75), 1200), 50)
+    range1 = range(0,300, 10)
+    range2 = range(0, 500, 20)
+    range3 = range(0, 1200, 50)
 
     selected_range = range1
-    if (i >= 4 and i < 8):
+    if (i >= 4 and i < 12):
       selected_range = range2
-    elif (i >=8):
+    elif (i >=12):
       selected_range = range3
 
     for j in selected_range:
-      j_index = int((j - 10)/5)
+      j_index = int(j /10)
       if (i >=4 and i < 8):
-        j_index = int((j - 20)/20)
+        j_index = int(j/20)
       elif (i >= 8):
-        j_index = int((j-100)/50)
+        j_index = int(j/50)
     
       threshold_values[i, j_index] = j
   return threshold_values
@@ -59,25 +58,31 @@ for i in range(28):
 
 #print(best_thresholds)
 
-plt.plot(range(28), best_overall_accuracy[:, 0, 0], label='Supervised STDP')
-plt.plot(range(28), best_overall_accuracy[:, 0, 1], label='Unsupervised STDP')
+plt.scatter(range(1,29), best_overall_accuracy[:, 0, 0], label='Supervised STDP')
+plt.scatter(range(1,29), best_overall_accuracy[:, 0, 1], label='Unsupervised STDP')
 plt.legend()
+
 
 plt.show()
 
 coverage_over_thresholds = np.zeros((50, 2))
 
 for j in range(50):
-  coverage_over_thresholds[j, 0] = results_array[18, j, 0, 0]
-  coverage_over_thresholds[j, 1] = results_array[18, j, 1, 0]
+  coverage_over_thresholds[j, 0] = results_array[27, j, 0, 0]
+  coverage_over_thresholds[j, 1] = results_array[27, j, 1, 0]
 
 coverage_indices1 = np.array(np.nonzero(coverage_over_thresholds[:,0] > 0), dtype=int).reshape(-1)
 coverage_indices2 = np.array(np.nonzero(coverage_over_thresholds[:,1] > 0), dtype=int).reshape(-1)
 
 
-plt.plot(thresholds[18,coverage_indices1], coverage_over_thresholds[coverage_indices1, 0], label='Supervised STDP')
-plt.plot(thresholds[18,coverage_indices2], coverage_over_thresholds[coverage_indices2, 1], label='Unsupervised STDP')
+plt.scatter(thresholds[27,coverage_indices1], coverage_over_thresholds[coverage_indices1, 0], label='Supervised STDP')
+plt.scatter(thresholds[27,coverage_indices2], coverage_over_thresholds[coverage_indices2, 1], label='Unsupervised STDP')
 plt.legend()
+
+plt.xlabel('Threshold')
+plt.ylabel('Coverage')
+plt.title('Coverage vs Threshold for Receptive Field Lenght 28')
+
 plt.show()
 
 accuracy_over_thresholds = np.zeros((50, 2))
@@ -90,24 +95,31 @@ accuracy_indices1 = np.array(np.nonzero(accuracy_over_thresholds[:,0] > 0), dtyp
 accuracy_indices2 = np.array(np.nonzero(accuracy_over_thresholds[:,1] > 0), dtype=int).reshape(-1)
 
 
-plt.plot(thresholds[18,accuracy_indices1], accuracy_over_thresholds[accuracy_indices1, 0], label='Supervised STDP')
-plt.plot(thresholds[18,accuracy_indices2], accuracy_over_thresholds[accuracy_indices2, 1], label='Unsupervised STDP')
+plt.scatter(thresholds[27,accuracy_indices1], accuracy_over_thresholds[accuracy_indices1, 0], label='Supervised STDP')
+plt.scatter(thresholds[27,accuracy_indices2], accuracy_over_thresholds[accuracy_indices2, 1], label='Unsupervised STDP')
 plt.legend()
+plt.ylabel('Accuracy (over successfully classified data)')
+plt.xlabel('Threshold')
+plt.title('Accuracy vs Threshold for Receptive Field Lenght 28')
 plt.show()
 
 overall_accuracy_over_thresholds = np.zeros((50, 2))
 
 for j in range(50):
-  overall_accuracy_over_thresholds[j, 0] = results_array[18, j, 0, 2] * results_array[18, j, 0, 0]
-  overall_accuracy_over_thresholds[j, 1] = results_array[18, j, 1, 2] * results_array[18, j, 1, 0]
+  overall_accuracy_over_thresholds[j, 0] = results_array[27, j, 0, 2] * results_array[27, j, 0, 0]
+  overall_accuracy_over_thresholds[j, 1] = results_array[27, j, 1, 2] * results_array[27, j, 1, 0]
 
 overall_accuracy_indices1 = np.array(np.nonzero(overall_accuracy_over_thresholds[:,0] > 0), dtype=int).reshape(-1)
 overall_accuracy_indices2 = np.array(np.nonzero(overall_accuracy_over_thresholds[:,1] > 0), dtype=int).reshape(-1)
 
 
-plt.plot(thresholds[18,overall_accuracy_indices1], overall_accuracy_over_thresholds[overall_accuracy_indices1, 0], label='Supervised STDP')
-plt.plot(thresholds[18,overall_accuracy_indices2], overall_accuracy_over_thresholds[overall_accuracy_indices2, 1], label='Unsupervised STDP')
+plt.scatter(thresholds[27,overall_accuracy_indices1], overall_accuracy_over_thresholds[overall_accuracy_indices1, 0], label='Supervised STDP')
+plt.scatter(thresholds[27,overall_accuracy_indices2], overall_accuracy_over_thresholds[overall_accuracy_indices2, 1], label='Unsupervised STDP')
 plt.legend()
+plt.ylabel('Overall Accuracy')
+plt.xlabel('Threshold')
+plt.title('Overall Accuracy vs Threshold for Receptive Field Lenght 28')
+
 plt.show()
 
 purities = []
@@ -121,4 +133,7 @@ plt.scatter(accuracies, purities, label='Puritys vs Accuracies')
 plt.plot(np.arange(0, 1, .1), np.arange(0, 1, .1), label='Expectation')
 
 plt.legend()
+plt.ylabel('Purity')
+plt.xlabel('Accuracy')
+plt.title('Purity vs Accuracy')
 plt.show()

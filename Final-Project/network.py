@@ -111,53 +111,55 @@ mnist.square_data = mnist.data.reshape(N,28,28)
 #final_results1 = np.concatenate((results1, max1, totals1, coverage1, purity1),
 #axis=1)
 #np.savetxt("results1.csv", final_results1, delimiter=",")
+def runExperiments():
+  results_array = np.load('results.out.npy')
+  for i in range(0,28):
 
-results_array = np.load('results.out.npy')
-print(results_array)
-for i in range(0,28):
+    range1 = range(0,300, 10)
+    range2 = range(0, 500, 20)
+    range3 = range(0, 1200, 50)
+    selected_range = range1
+    if (i >= 4 and i < 12):
+      selected_range = range2
+    elif (i >=12):
+      selected_range = range3
 
-  range1 = range(0,300, 10)
-  range2 = range(0, 500, 20)
-  range3 = range(0, 1200, 50)
-  selected_range = range1
-  if (i >= 4 and i < 12):
-    selected_range = range2
-  elif (i >=12):
-    selected_range = range3
+    for j in selected_range:
+      j_index = int(j /10)
+      if (i >=4 and i < 8):
+        j_index = int(j/20)
+      elif (i >= 8):
+        j_index = int(j/50)
 
-  for j in selected_range:
-    j_index = 10 * i
-    if (i >=4 and i < 8):
-      j_index = int((j - 20)/20)
-    elif (i >= 8):
-      j_index = int((j-100)/50)
+      coverage = 0
+      low_coverage = False
+      for k in range(2):
+        print("Receptive Field: ", i)
+        print("Threshold: ", j)
+        print("J_index: ", j_index)
+        print("isForced", k == 0)
+        input_output_weight = 1
+        input_no_output_weight = .05
+        no_input_output_weight = 1
+        input_inhibited_output_weight = 1
+        parameters = [input_output_weight, input_no_output_weight, input_inhibited_output_weight, no_input_output_weight]
+        num_data = 4000
+        training_results, test_results  = calculate_metrics(mnist.square_data, mnist.target, i+1,j, parameters, num_data,k == 0)
+        coverage = np.sum(test_results[0]) / (num_data/2)
+        purity = np.mean(np.amax(training_results, axis=1) / np.sum(training_results, axis=1))
+        accuracy = np.mean(test_results[1] / test_results[0])
+        print("Coverage: ", coverage)
+        print("Purity: ", purity)
+        print("Accuracy: ", accuracy)
+        results_array[i, j_index, k, 0] = coverage
+        results_array[i, j_index, k, 1] = purity
+        results_array[i, j_index, k, 2] = accuracy
+        if (coverage < 0.05):
+          low_coverage = True
+        np.save('results.out', results_array)
+      if low_coverage:
+        break
 
-    coverage = 0
-    for k in range(2):
-      print("Receptive Field: ", i)
-      print("Threshold: ", j)
-      print("J_index: ", j_index)
-      print("isForced", k == 0)
-      input_output_weight = 1
-      input_no_output_weight = .05
-      no_input_output_weight = 1
-      input_inhibited_output_weight = 1
-      parameters = [input_output_weight, input_no_output_weight, input_inhibited_output_weight, no_input_output_weight]
-      num_data = 4000
-      training_results, test_results  = calculate_metrics(mnist.square_data, mnist.target, i+1,j, parameters, num_data,k == 0)
-      coverage = np.sum(test_results[0]) / (num_data/2)
-      purity = np.mean(np.amax(training_results, axis=1) / np.sum(training_results, axis=1))
-      accuracy = np.mean(test_results[1] / test_results[0])
-      print("Coverage: ", coverage)
-      print("Purity: ", purity)
-      print("Accuracy: ", accuracy)
-      results_array[i, j_index, k, 0] = coverage
-      results_array[i, j_index, k, 1] = purity
-      results_array[i, j_index, k, 2] = accuracy
-
-      np.save('results.out', results_array)
-    if (coverage < 0.05):
-      break
 
 #print("Receptive Field: (12,16)")
 #results3 = calculate_metrics(mnist.square_data, mnist.target, (12,16))
