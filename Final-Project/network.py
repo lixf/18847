@@ -37,7 +37,6 @@ def evaluate(layer1, layer2, data, target, receptive_field, parameters=None, isT
         # result array is num_patterns x num_labels, where value is number of
         # occurrences
 
-        layer2.stdp_update_rule(parameters)
 
         for k in range(layer2.spikes.shape[0]):
           if (layer2.spikes[k] == 0):
@@ -54,6 +53,9 @@ def evaluate(layer1, layer2, data, target, receptive_field, parameters=None, isT
         break
       layer1.increment_time()
       layer2.increment_time()
+    if (isTraining):
+      layer2.stdp_update_rule(parameters)
+
     layer1.reset()
     layer2.reset()
     #print("\rComplete: ", itr+1, end="")
