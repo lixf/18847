@@ -37,10 +37,11 @@ def evaluate(layer1, layer2, data, target, receptive_field, parameters=None, isT
         # result array is num_patterns x num_labels, where value is number of
         # occurrences
 
+        layer2.stdp_update_rule(parameters)
+
         for k in range(layer2.spikes.shape[0]):
           if (layer2.spikes[k] == 0):
             training_results[k, int(target[i])]+=1
-            layer2.stdp_update_rule(parameters)
             found_answer = True
       else:
         for k in range(layer2.spikes.shape[0]):
