@@ -7,6 +7,8 @@ from filters import OffCenterFilter, OnCenterFilter
 import csv
 import time
 
+import pdb
+
 def evaluate(layer1, layer2, data, target, receptive_field, parameters=None, isTraining=True, assignments=None, isForced=False):
   training_results = np.zeros((10, 10))
   test_results = np.zeros((2,10))
@@ -70,7 +72,7 @@ def evaluate(layer1, layer2, data, target, receptive_field, parameters=None, isT
     return test_results
 
 
-def calculate_metrics(data, target, receptive_field_length, threshold, parameters=None, num_data=2000, isForced=False):
+def calculate_metrics(data, target, receptive_field_length, threshold, parameters=None, num_data=2000, isForced=False, isSorted=False):
 
   # Structure of the TNN
 
@@ -85,8 +87,12 @@ def calculate_metrics(data, target, receptive_field_length, threshold, parameter
 
   # selects 10000 random images for training and testing
   permutation = np.random.permutation(len(data))
+  if isSorted:
+      permutation = np.sort(permutation)
+
   training = permutation[int(num_data/2):num_data]
   test = permutation[:int(num_data/2)]
+
   
   # Generates spikes for layer 1 using 2 different filters
   # this is the testing phase
@@ -102,6 +108,7 @@ N, _ = mnist.data.shape
 
 # Reshape the data to be square
 mnist.square_data = mnist.data.reshape(N,28,28)
+#pdb.set_trace()
 
 def runExperiments():
   results_array = np.load('results.out.npy')
@@ -159,21 +166,45 @@ input_inhibited_output_weight = 1
 parameters = [input_output_weight, input_no_output_weight, input_inhibited_output_weight, no_input_output_weight]
 num_data = 4000
 
+# Configs
+isForced = True
+isSorted = False
+
 print("Receptive Field: ", 28)
 print("Threshold: ", 300)
-print("isForced", True)
+print("isForced", isForced)
 
-training_results, test_results  = calculate_metrics(mnist.square_data, mnist.target, 28,300, parameters, num_data,True)
+training_results, test_results  = calculate_metrics(mnist.square_data, mnist.target, 28,300, parameters, num_data, isForced, isSorted)
 coverage = np.sum(test_results[0]) / (num_data/2)
 purity = np.mean(np.amax(training_results, axis=1) / np.sum(training_results, axis=1))
 accuracy = np.mean(test_results[1] / test_results[0])
 print("Coverage: ", coverage)
 print("Purity: ", purity)
 print("Accuracy: ", accuracy)
+print("#" * 20)
 
+isForced = False
+isSorted = True
 print("Receptive Field: ", 28)
 print("Threshold: ", 300)
-print("isForced", True)
+print("isForced", isForced)
+print("isSorted", isSorted)
+
+training_results, test_results  = calculate_metrics(mnist.square_data, mnist.target, 28,300, parameters, num_data, isForced, isSorted)
+coverage = np.sum(test_results[0]) / (num_data/2)
+purity = np.mean(np.amax(training_results, axis=1) / np.sum(training_results, axis=1))
+accuracy = np.mean(test_results[1] / test_results[0])
+print("Coverage: ", coverage)
+print("Purity: ", purity)
+print("Accuracy: ", accuracy)
+print("#" * 20)
+
+isForced = False
+isSorted = False
+print("Receptive Field: ", 28)
+print("Threshold: ", 300)
+print("isForced", isForced)
+print("isSorted", isSorted)
 
 training_results, test_results  = calculate_metrics(mnist.square_data, mnist.target, 28,300, parameters, num_data,False)
 coverage = np.sum(test_results[0]) / (num_data/2)
