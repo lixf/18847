@@ -55,6 +55,7 @@ def evaluate(layer1, layer2, data, target, receptive_field, parameters=None, isT
         break
       layer1.increment_time()
       layer2.increment_time()
+    
     if (isTraining):
       layer2.stdp_update_rule(parameters)
 
@@ -62,6 +63,7 @@ def evaluate(layer1, layer2, data, target, receptive_field, parameters=None, isT
     layer2.reset()
     #print("\rComplete: ", itr+1, end="")
 
+  #pdb.set_trace()
   assignments = np.argmax(training_results, axis=1)
 
   if (isTraining):
@@ -87,17 +89,15 @@ def calculate_metrics(data, target, receptive_field_length, threshold, parameter
 
   # selects 10000 random images for training and testing
   permutation = np.random.permutation(len(data))
-  if isSorted:
-      train_permutation = np.sort(permutation)
-  else:
-      train_permutation = permutation
-
-  training = train_permutation[int(num_data/2):num_data]
+  training = permutation[int(num_data/2):num_data]
   test = permutation[:int(num_data/2)]
 
+  if isSorted:
+      training = np.sort(training)
   
   # Generates spikes for layer 1 using 2 different filters
   # this is the testing phase
+  #pdb.set_trace()
 
   training_results, assignments = evaluate(layer1, layer2, data[training], target[training], receptive_field, parameters, True, None, isForced)
   print(assignments)
@@ -144,7 +144,7 @@ def runExperiments():
         no_input_output_weight = 1
         input_inhibited_output_weight = 1
         parameters = [input_output_weight, input_no_output_weight, input_inhibited_output_weight, no_input_output_weight]
-        num_data = 4000
+        num_data = 10000
         training_results, test_results  = calculate_metrics(mnist.square_data, mnist.target, i+1,j, parameters, num_data,k == 0)
         coverage = np.sum(test_results[0]) / (num_data/2)
         purity = np.mean(np.amax(training_results, axis=1) / np.sum(training_results, axis=1))

@@ -1,6 +1,7 @@
 import math
 import numpy as np
 import matplotlib.pyplot as plt
+import pdb
 
 # This layer connects to a previous layer that is spiking.
 # It carries W weights that are initialized at random.
@@ -197,8 +198,10 @@ class Layer():
 
       # self.W indixes these 2d arrays and performs stdp 
       # the values for the weights to increase and decrease are manually picked
+      #pdb.set_trace()
       self.W[input_output == True] = np.minimum(10,self.W[input_output == True] + input_output_weight)
       self.W[input_no_output == True] = np.minimum(10,self.W[input_no_output == True] + input_no_output_weight)
+      #self.W[input_inhibited_output == True] = 0
       self.W[input_inhibited_output == True] = np.maximum(0,self.W[input_inhibited_output == True] - input_inhibited_output_weight)
       #self.W[no_input_output == True] = 0
       self.W[no_input_output == True] = np.maximum(0,self.W[no_input_output == True] - no_input_output_weight)
