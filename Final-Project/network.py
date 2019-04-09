@@ -9,59 +9,54 @@ import time
 
 import pdb
 
-def evaluate(layer1, layer2, data, target, receptive_field, parameters=None, isTraining=True, assignments=None, isForced=False):
+def evaluate(in_layer, hidden_layers, data, target, receptive_field, parameters=None, isTraining=True, assignments=None, isForced=False):
   training_results = np.zeros((10, 10))
   test_results = np.zeros((2,10))
 
   for i in range(len(data)):
-    layer1.raw_data = data[i]
-    layer1.generate_spikes(OnCenterFilter, OffCenterFilter, receptive_field)
-
-    #print(i)
-    #for each image go through all time steps
+    in_layer.raw_data = data[i]
+    in_layer.generate_spikes(OnCenterFilter, OffCenterFilter, receptive_field)
 
     found_answer = False
-    for j in range(8):
+    for layer in hidden_layers:
 
-      #feedforward inhibitionn with max 4 spikes
-      #layer1.feedforward_inhibition(16)
+      for j in range(8):
 
-      layer2.generate_spikes()
+        layer.generate_spikes()
 
-      # only select one of the 8 spikes
-      layer2.wta(1, 8)
-      if (isForced):
-        for k in range(len(layer2.spikes)):
-          if (k != target[i]):
-            layer2.spikes[k] = -1
+        # only select one of the 8 spikes
+        layer.wta(1, 8)
+        if (isForced):
+          for k in range(len(layer.spikes)):
+            if (k != target[i]):
+              layer.spikes[k] = -1
 
+        if (isTraining):
+          # result array is num_patterns x num_labels, where value is number of
+          # occurrences
+
+          for k in range(layer.spikes.shape[0]):
+            if (layer.spikes[k] == 0):
+              training_results[k, int(target[i])]+=1
+              found_answer = True
+        else:
+          for k in range(layer.spikes.shape[0]):
+            if (layer.spikes[k] == 0):
+              test_results[0,k]+=1
+              found_answer = True
+              if (int(target[i]) == assignments[k]):
+                test_results[1,k]+=1
+        if (found_answer):
+          break
+        in_layer.increment_time()
+        layer.increment_time()
+      
       if (isTraining):
-        # result array is num_patterns x num_labels, where value is number of
-        # occurrences
+        layer.stdp_update_rule(parameters)
 
-
-        for k in range(layer2.spikes.shape[0]):
-          if (layer2.spikes[k] == 0):
-            training_results[k, int(target[i])]+=1
-            found_answer = True
-      else:
-        for k in range(layer2.spikes.shape[0]):
-          if (layer2.spikes[k] == 0):
-            test_results[0,k]+=1
-            found_answer = True
-            if (int(target[i]) == assignments[k]):
-              test_results[1,k]+=1
-      if (found_answer):
-        break
-      layer1.increment_time()
-      layer2.increment_time()
-    
-    if (isTraining):
-      layer2.stdp_update_rule(parameters)
-
-    layer1.reset()
-    layer2.reset()
-    #print("\rComplete: ", itr+1, end="")
+      in_layer.reset()
+      layer.reset()
+      #print("\rComplete: ", itr+1, end="")
 
   #pdb.set_trace()
   assignments = np.argmax(training_results, axis=1)
@@ -86,6 +81,15 @@ def calculate_metrics(data, target, receptive_field_length, threshold, parameter
 
   # threshold indicates the max neuron sum before firing
   layer2 = layer.Layer(layer_id=2, num_neurons=num_outputs, prev_layer=layer1, threshold=threshold)
+  layer3 = layer.Layer(layer_id=3, num_neurons=num_outputs, prev_layer=layer2, threshold=threshold)
+  layer4 = layer.Layer(layer_id=4, num_neurons=num_outputs, prev_layer=layer3, threshold=threshold)
+  layer5 = layer.Layer(layer_id=5, num_neurons=num_outputs, prev_layer=layer4, threshold=threshold)
+
+  hidden_layers = []
+  hidden_layers.append(layer2)
+  hidden_layers.append(layer3)
+  hidden_layers.append(layer4)
+  hidden_layers.append(layer5)
 
   # selects 10000 random images for training and testing
   permutation = np.random.permutation(len(data))
@@ -99,9 +103,10 @@ def calculate_metrics(data, target, receptive_field_length, threshold, parameter
   # this is the testing phase
   #pdb.set_trace()
 
-  training_results, assignments = evaluate(layer1, layer2, data[training], target[training], receptive_field, parameters, True, None, isForced)
+  training_results, assignments = evaluate(layer1, hidden_layers, data[training], target[training], receptive_field, parameters, True, None, isForced)
   print(assignments)
-  test_results = evaluate(layer1, layer2, data[test], target[test], receptive_field,parameters, False, assignments)
+
+  test_results = evaluate(layer1, hidden_layers, data[test], target[test], receptive_field,parameters, False, assignments)
   return [training_results, test_results]
 
 
