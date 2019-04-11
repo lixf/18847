@@ -7,11 +7,26 @@ from filters import OffCenterFilter, OnCenterFilter
 import csv
 import time
 
+weights_array1 = np.zeros((4, 10, 28, 28))
+weights_array2 = np.zeros((4, 10, 28, 28))
+
 def evaluate(layer1, layer2, data, target, receptive_field, parameters=None, isTraining=True, assignments=None, isForced=False):
   training_results = np.zeros((10, 10))
   test_results = np.zeros((2,10))
 
   for i in range(len(data)):
+    if (~isForced):
+      if (i % 1000 == 0):
+        weights_array1[int(i / 1000)] = layer2.W[:784, :].transpose().reshape((10,28,28))
+
+      if (i == 3000):
+        np.save('weights_array3', weights_array1)
+    if (isForced):
+      if (i % 1000 == 0):
+        weights_array2[int(i / 1000)] = layer2.W[:784, :].transpose().reshape((10,28,28))
+
+      if (i == 3000):
+        np.save('weights_array4', weights_array2)
     layer1.raw_data = data[i]
     layer1.generate_spikes(OnCenterFilter, OffCenterFilter, receptive_field)
 
@@ -27,11 +42,13 @@ def evaluate(layer1, layer2, data, target, receptive_field, parameters=None, isT
       layer2.generate_spikes()
 
       # only select one of the 8 spikes
-      layer2.wta(1, 8)
       if (isForced):
         for k in range(len(layer2.spikes)):
           if (k != target[i]):
             layer2.spikes[k] = -1
+      else:
+        layer2.wta(1, 8)
+
 
       if (isTraining):
         # result array is num_patterns x num_labels, where value is number of
@@ -40,8 +57,9 @@ def evaluate(layer1, layer2, data, target, receptive_field, parameters=None, isT
         for k in range(layer2.spikes.shape[0]):
           if (layer2.spikes[k] == 0):
             training_results[k, int(target[i])]+=1
-            layer2.stdp_update_rule(parameters)
             found_answer = True
+        layer2.stdp_update_rule(parameters)
+
       else:
         for k in range(layer2.spikes.shape[0]):
           if (layer2.spikes[k] == 0):
@@ -53,6 +71,7 @@ def evaluate(layer1, layer2, data, target, receptive_field, parameters=None, isT
         break
       layer1.increment_time()
       layer2.increment_time()
+
     layer1.reset()
     layer2.reset()
     #print("\rComplete: ", itr+1, end="")
@@ -79,6 +98,7 @@ def calculate_metrics(data, target, receptive_field_length, threshold, parameter
 
   # threshold indicates the max neuron sum before firing
   layer2 = layer.Layer(layer_id=2, num_neurons=num_outputs, prev_layer=layer1, threshold=threshold)
+  layer2.W = np.random.random(layer2.W.shape) * 10
 
   # selects 10000 random images for training and testing
   permutation = np.random.permutation(len(data))
@@ -154,7 +174,7 @@ input_no_output_weight = .05
 no_input_output_weight = 1
 input_inhibited_output_weight = 1
 parameters = [input_output_weight, input_no_output_weight, input_inhibited_output_weight, no_input_output_weight]
-num_data = 4000
+num_data = 20000
 
 print("Receptive Field: ", 28)
 print("Threshold: ", 300)

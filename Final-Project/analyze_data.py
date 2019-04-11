@@ -1,6 +1,29 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+not_forced_weights_array = np.load('weights_array3.npy')
+forced_weights_array = np.load('weights_array4.npy')
+
+fig=plt.figure(figsize=(16, 16))
+columns = 10
+rows = 4
+
+for i in range(len(not_forced_weights_array)):
+  for j in range(not_forced_weights_array.shape[1]):
+    fig.add_subplot(rows, columns, i*10 + j+1)
+    plt.imshow(not_forced_weights_array[i][j], cmap='hot', interpolation='nearest')
+plt.show()
+
+fig=plt.figure(figsize=(16, 16))
+
+for i in range(len(forced_weights_array)):
+  for j in range(not_forced_weights_array.shape[1]):
+    fig.add_subplot(rows, columns, i*10 + j+1)
+    plt.imshow(forced_weights_array[i][j], cmap='hot', interpolation='nearest')
+plt.show()
+
+
+
 results_array = np.load('results.out.npy')
 def calculateThresholds():
   threshold_values = np.zeros((28, 50))
