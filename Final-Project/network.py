@@ -7,54 +7,59 @@ from filters import OffCenterFilter, OnCenterFilter
 import csv
 import time
 
-def evaluate(layer1, layer2, data, target, receptive_field, parameters=None, isTraining=True, assignments=None, isForced=False):
-  training_results = np.zeros((10, 10))
-  test_results = np.zeros((2,10))
+def evaluate(layers, data, target, receptive_field, parameters=None, isTraining=True, assignments=None, isForced=False):
+  training_results = np.zeros((layers[-1].num_neurons, 10))
+  test_results = np.zeros((2,layers[-1].num_neurons))
 
+  svm_inputs = []
+  oldW = np.copy(layers[-1].W)
   for i in range(len(data)):
-    layer1.raw_data = data[i]
-    layer1.generate_spikes(OnCenterFilter, OffCenterFilter, receptive_field)
+    layers[0].raw_data = data[i]
+    layers[0].generate_spikes(OnCenterFilter, OffCenterFilter, receptive_field)
 
-    #print(i)
+    neurons_spiked = np.full(layers[-1].spikes.shape, -1)
     #for each image go through all time steps
 
     found_answer = False
     for j in range(8):
 
       #feedforward inhibitionn with max 4 spikes
-      #layer1.feedforward_inhibition(16)
+      #layer2.feedforward_inhibition(100, 8)
 
-      layer2.generate_spikes()
-
-      # only select one of the 8 spikes
-      layer2.wta(1, 8)
-      if (isForced):
-        for k in range(len(layer2.spikes)):
-          if (k != target[i]):
-            layer2.spikes[k] = -1
+      for k in range(1,len(layers)):
+        layers[k].generate_spikes()
+        if (isTraining):
+          if (isForced):
+            for l in range(1,len(layers)):
+              layers[l].supervised_rule(int(target[i]))
+          layers[1].wta(25, 8)
+          layers[2].wta(1, 8)
 
       if (isTraining):
         # result array is num_patterns x num_labels, where value is number of
         # occurrences
 
-        for k in range(layer2.spikes.shape[0]):
-          if (layer2.spikes[k] == 0):
+        for k in range(layers[-1].spikes.shape[0]):
+          if (layers[-1].spikes[k] == 0):
             training_results[k, int(target[i])]+=1
-            layer2.stdp_update_rule(parameters)
             found_answer = True
       else:
-        for k in range(layer2.spikes.shape[0]):
-          if (layer2.spikes[k] == 0):
+        for k in range(layers[-1].spikes.shape[0]):
+          if (layers[-1].spikes[k] == 0):
             test_results[0,k]+=1
             found_answer = True
             if (int(target[i]) == assignments[k]):
-              test_results[1,k]+=1
-      if (found_answer):
-        break
-      layer1.increment_time()
-      layer2.increment_time()
-    layer1.reset()
-    layer2.reset()
+              test_results[1,int(target[i])]+=1
+        neurons_spiked[(layers[-1].spikes == 0) & (neurons_spiked == -1)] = j
+      for layer in layers:
+        layer.increment_time()
+
+    svm_inputs.append(neurons_spiked)
+    if (isTraining):
+      for k in range(1,len(layers)):
+        layers[k].stdp_update_rule(parameters)
+    for layer in layers:
+      layer.reset()
     #print("\rComplete: ", itr+1, end="")
 
   assignments = np.argmax(training_results, axis=1)
@@ -64,22 +69,33 @@ def evaluate(layer1, layer2, data, target, receptive_field, parameters=None, isT
     return [training_results, assignments]
   else:
     test_results[0][test_results[0] == 0] = 1
-    return test_results
+    svm_inputs = np.array(svm_inputs)
+    pre_svm_inputs = np.copy(svm_inputs)
+    svm_inputs[svm_inputs == -1] = 8
+    svm_inputs = svm_inputs - np.mean(svm_inputs, axis=0)
+    svm_inputs = svm_inputs / (.001 + 2* np.std(svm_inputs, axis=0))
+    return [test_results, svm_inputs, pre_svm_inputs]
+
 
 
 def calculate_metrics(data, target, receptive_field_length, threshold, parameters=None, num_data=2000, isForced=False):
 
   # Structure of the TNN
 
-  num_outputs = 10
+  num_outputs = 128
 
   #threshold indicates the highest filter spiketime that can be condsidered
   layer1 = firstlayer.FirstLayer(layer_id=1, training_raw_data=data[0], threshold=8, receptive_field_length=receptive_field_length)
   receptive_field = (int(14-receptive_field_length/2),int(14-receptive_field_length/2))
 
   # threshold indicates the max neuron sum before firing
-  layer2 = layer.Layer(layer_id=2, num_neurons=num_outputs, prev_layer=layer1, threshold=threshold)
+  layer2 = layer.Layer(layer_id=2, num_neurons=num_outputs, prev_layer=layer1, threshold=threshold, can_overlap=True, max_repeats=25)
 
+  # threshold indicates the max neuron sum before firing
+  layer3 = layer.Layer(layer_id=3, num_neurons=10, prev_layer=layer2, threshold=90, can_overlap=False, max_repeats=1)
+
+  layers = [layer1, layer2, layer3]
+  #layers = [layer1, layer2]
   # selects 10000 random images for training and testing
   permutation = np.random.permutation(len(data))
   training = permutation[int(num_data/2):num_data]
@@ -88,9 +104,26 @@ def calculate_metrics(data, target, receptive_field_length, threshold, parameter
   # Generates spikes for layer 1 using 2 different filters
   # this is the testing phase
 
-  training_results, assignments = evaluate(layer1, layer2, data[training], target[training], receptive_field, parameters, True, None, isForced)
+  training_results, assignments = evaluate(layers, data[training], target[training], receptive_field, parameters, True, None, isForced)
   print(assignments)
-  test_results = evaluate(layer1, layer2, data[test], target[test], receptive_field,parameters, False, assignments)
+
+  test_results, svm_inputs, pre_svm_inputs = evaluate(layers, data[training], target[training], receptive_field,parameters, False, assignments)
+
+  from sklearn.svm import SVC
+  
+  print('SVM Classifier with gamma = 0.1; Kernel = Polynomial')
+  classifier = SVC(gamma=0.1, kernel='poly', random_state = 0)
+  classifier.fit(svm_inputs,target[training])
+  from sklearn.metrics import accuracy_score
+  test_results, svm_inputs, pre_svm_inputs = evaluate(layers, data[test], target[test], receptive_field,parameters, False, assignments)
+  y_pred = classifier.predict(svm_inputs)
+
+  print("SVM Accuracy score: ",accuracy_score(target[test], y_pred))
+  print("Coverage: ", np.mean(np.sum(pre_svm_inputs != -1, axis=1) > 0))
+  print("Neuron Coverage: ", np.mean(np.mean(pre_svm_inputs != -1, axis=1)))
+
+  
+
   return [training_results, test_results]
 
 
@@ -100,79 +133,31 @@ N, _ = mnist.data.shape
 # Reshape the data to be square
 mnist.square_data = mnist.data.reshape(N,28,28)
 
-def runExperiments():
-  results_array = np.load('results.out.npy')
-  for i in range(0,28):
-
-    range1 = range(0,300, 10)
-    range2 = range(0, 500, 20)
-    range3 = range(0, 1200, 50)
-    selected_range = range1
-    if (i >= 4 and i < 12):
-      selected_range = range2
-    elif (i >=12):
-      selected_range = range3
-
-    for j in selected_range:
-      j_index = int(j /10)
-      if (i >=4 and i < 8):
-        j_index = int(j/20)
-      elif (i >= 8):
-        j_index = int(j/50)
-
-      coverage = 0
-      low_coverage = False
-      for k in range(2):
-        print("Receptive Field: ", i)
-        print("Threshold: ", j)
-        print("J_index: ", j_index)
-        print("isForced", k == 0)
-        input_output_weight = 1
-        input_no_output_weight = .05
-        no_input_output_weight = 1
-        input_inhibited_output_weight = 1
-        parameters = [input_output_weight, input_no_output_weight, input_inhibited_output_weight, no_input_output_weight]
-        num_data = 4000
-        training_results, test_results  = calculate_metrics(mnist.square_data, mnist.target, i+1,j, parameters, num_data,k == 0)
-        coverage = np.sum(test_results[0]) / (num_data/2)
-        purity = np.mean(np.amax(training_results, axis=1) / np.sum(training_results, axis=1))
-        accuracy = np.mean(test_results[1] / test_results[0])
-        print("Coverage: ", coverage)
-        print("Purity: ", purity)
-        print("Accuracy: ", accuracy)
-        results_array[i, j_index, k, 0] = coverage
-        results_array[i, j_index, k, 1] = purity
-        results_array[i, j_index, k, 2] = accuracy
-        if (coverage < 0.05):
-          low_coverage = True
-        np.save('results.out', results_array)
-      if low_coverage:
-        break
-
-input_output_weight = 1
+input_output_weight = 1.2
 input_no_output_weight = .05
-no_input_output_weight = 1
-input_inhibited_output_weight = 1
+no_input_output_weight = .5
+input_inhibited_output_weight = .5
 parameters = [input_output_weight, input_no_output_weight, input_inhibited_output_weight, no_input_output_weight]
 num_data = 4000
 
 print("Receptive Field: ", 28)
-print("Threshold: ", 300)
+threshold = 100
+print("Threshold: ", threshold)
 print("isForced", True)
 
-training_results, test_results  = calculate_metrics(mnist.square_data, mnist.target, 28,300, parameters, num_data,True)
+training_results, test_results  = calculate_metrics(mnist.square_data, mnist.target, 28,threshold, parameters, num_data,True)
 coverage = np.sum(test_results[0]) / (num_data/2)
 purity = np.mean(np.amax(training_results, axis=1) / np.sum(training_results, axis=1))
 accuracy = np.mean(test_results[1] / test_results[0])
-print("Coverage: ", coverage)
+#print("Coverage: ", coverage)
 print("Purity: ", purity)
 print("Accuracy: ", accuracy)
 
 print("Receptive Field: ", 28)
-print("Threshold: ", 300)
-print("isForced", True)
+print("Threshold: ", threshold)
+print("isForced", False)
 
-training_results, test_results  = calculate_metrics(mnist.square_data, mnist.target, 28,300, parameters, num_data,False)
+training_results, test_results  = calculate_metrics(mnist.square_data, mnist.target, 28,threshold, parameters, num_data,False)
 coverage = np.sum(test_results[0]) / (num_data/2)
 purity = np.mean(np.amax(training_results, axis=1) / np.sum(training_results, axis=1))
 accuracy = np.mean(test_results[1] / test_results[0])

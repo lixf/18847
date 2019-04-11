@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 # -1 or 0, where -1 is no spike and 0 is a spike happenning right now.
 
 class Layer():
-    def __init__(self, layer_id, num_neurons, prev_layer, threshold):  
+    def __init__(self, layer_id, num_neurons, prev_layer, threshold, can_overlap=True, max_repeats=-1):  
         self.layer_id = layer_id
         self.prev_layer = prev_layer
         self.threshold = threshold
@@ -29,6 +29,10 @@ class Layer():
         self.neuron_sums = np.zeros(shape=(num_neurons))
         self.spikes = np.full(shape=(num_neurons),fill_value=-1)
         self.contributing_spikes = np.full(shape=(self.W.shape),fill_value=False)
+        self.can_overlap = can_overlap
+        self.max_repeats = max_repeats
+
+        self.assignments = np.full((10,num_neurons), False)
 
         #this stores the spikes which were inhibited laterally
         self.inhibited_spikes = np.full(shape=(num_neurons), fill_value = False)
@@ -90,6 +94,26 @@ class Layer():
 
         return
     
+    def supervised_rule(self, label):
+        if self.can_overlap == False:
+          for i in range(len(self.spikes)):
+            if self.spikes[i] == 0:
+              existing_assignments = self.assignments[:,i]
+              if (np.sum(existing_assignments) != 0 and existing_assignments[label] == False):
+                self.spikes[i] = -1
+        existing_assignments = self.assignments[label]
+        assignments_left = self.max_repeats - np.sum(existing_assignments)
+        for i in range(len(self.spikes)):
+          if (self.spikes[i] == 0):
+            if (assignments_left > 0 or self.max_repeats == -1):
+              if (existing_assignments[i] == False):
+                assignments_left -= 1
+              self.assignments[label, i] = True
+
+            elif existing_assignments[i] == False:
+              self.spikes[i] = -1
+
+
     def increment_time(self):
         """
         This function will allow the current stimulation of the neurons
