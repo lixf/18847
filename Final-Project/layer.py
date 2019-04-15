@@ -65,7 +65,6 @@ class Layer():
         self.remaining_FF_time = 0
         self.contributing_spikes = np.full(shape=(self.W.shape),fill_value=False)
         self.old_spikes = np.full(shape=(self.num_neurons),fill_value=-1)
-        self.assignments = np.full((10,self.num_neurons), False)
         self.inhibited_spikes = np.full(shape=(self.num_neurons), fill_value = False)
     
     def generate_spikes(self):
@@ -104,7 +103,9 @@ class Layer():
                 self.spikes[i] = -1
         existing_assignments = self.assignments[label]
         assignments_left = self.max_repeats - np.sum(existing_assignments)
-        for i in range(len(self.spikes)):
+        permutation = np.random.permutation(len(self.spikes))
+        for perm in range(len(self.spikes)):
+          i = permutation[perm]
           if (self.spikes[i] == 0):
             if (assignments_left > 0 or self.max_repeats == -1):
               if (existing_assignments[i] == False):

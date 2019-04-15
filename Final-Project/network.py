@@ -107,6 +107,10 @@ def calculate_metrics(data, target, receptive_field_length, threshold, parameter
 
   training_results, assignments = evaluate(layers, data[training], target[training], receptive_field, parameters, True, None, isForced)
   print(assignments)
+  distributions = np.zeros(10)
+  for i in range(10):
+    distributions[i] = np.sum(assignments == i) / len(assignments) * 1.0
+  print(distributions)
 
   test_results, svm_inputs, pre_svm_inputs = evaluate(layers, data[training], target[training], receptive_field,parameters, False, assignments)
 
@@ -125,7 +129,7 @@ def calculate_metrics(data, target, receptive_field_length, threshold, parameter
 
   
 
-  return [training_results, test_results]
+  return [training_results, test_results, accuracy_score(target[test], y_pred)]
 
 
 mnist = fetch_mldata('MNIST original')
@@ -134,19 +138,19 @@ N, _ = mnist.data.shape
 # Reshape the data to be square
 mnist.square_data = mnist.data.reshape(N,28,28)
 
-input_output_weight = 1.2
-input_no_output_weight = .05
-no_input_output_weight = .5
-input_inhibited_output_weight = .5
+input_output_weight = 1.340
+input_no_output_weight = 0.0622
+input_inhibited_output_weight = .492
+no_input_output_weight = .386
 parameters = [input_output_weight, input_no_output_weight, input_inhibited_output_weight, no_input_output_weight]
 num_data = 4000
 
 print("Receptive Field: ", 28)
-threshold = 10
+threshold = 210.7
 print("Threshold: ", threshold)
 print("isForced", True)
 
-training_results, test_results  = calculate_metrics(mnist.square_data, mnist.target, 28,threshold, parameters, num_data,True)
+training_results, test_results, svm_accuracy  = calculate_metrics(mnist.square_data, mnist.target, 28,threshold, parameters, num_data,True)
 coverage = np.sum(test_results[0]) / (num_data/2)
 purity = np.mean(np.amax(training_results, axis=1) / np.sum(training_results, axis=1))
 accuracy = np.mean(test_results[1] / test_results[0])
@@ -158,7 +162,7 @@ print("Receptive Field: ", 28)
 print("Threshold: ", threshold)
 print("isForced", False)
 
-training_results, test_results  = calculate_metrics(mnist.square_data, mnist.target, 28,threshold, parameters, num_data,False)
+training_results, test_results, svm_accuracy  = calculate_metrics(mnist.square_data, mnist.target, 28,threshold, parameters, num_data,False)
 coverage = np.sum(test_results[0]) / (num_data/2)
 purity = np.mean(np.amax(training_results, axis=1) / np.sum(training_results, axis=1))
 accuracy = np.mean(test_results[1] / test_results[0])
