@@ -34,7 +34,7 @@ def evaluate(layers, data, target, receptive_field, parameters=None, isTraining=
               layers[l].supervised_rule(int(target[i]))
           else:
             layers[1].wta(25, 8)
-            #layers[2].wta(1, 8)
+            layers[2].wta(1, 8)
 
       if (isTraining):
         # result array is num_patterns x num_labels, where value is number of
@@ -58,7 +58,7 @@ def evaluate(layers, data, target, receptive_field, parameters=None, isTraining=
     svm_inputs.append(neurons_spiked)
     if (isTraining):
       for k in range(1,len(layers)):
-        layers[k].stdp_update_rule(parameters)
+        layers[k].stdp_update_rule(parameters[k-1])
     for layer in layers:
       layer.reset()
     #print("\rComplete: ", itr+1, end="")
@@ -90,13 +90,13 @@ def calculate_metrics(data, target, receptive_field_length, threshold, parameter
   receptive_field = (int(14-receptive_field_length/2),int(14-receptive_field_length/2))
 
   # threshold indicates the max neuron sum before firing
-  layer2 = layer.Layer(layer_id=2, num_neurons=num_outputs, prev_layer=layer1, threshold=threshold, can_overlap=True, max_repeats=25)
+  layer2 = layer.Layer(layer_id=2, num_neurons=num_outputs, prev_layer=layer1, threshold=threshold[0], can_overlap=True, max_repeats=25)
 
   # threshold indicates the max neuron sum before firing
-  #layer3 = layer.Layer(layer_id=3, num_neurons=10, prev_layer=layer2, threshold=90, can_overlap=False, max_repeats=1)
+  layer3 = layer.Layer(layer_id=3, num_neurons=10, prev_layer=layer2, threshold=threshold[1], can_overlap=False, max_repeats=1)
 
-  #layers = [layer1, layer2, layer3]
-  layers = [layer1, layer2]
+  layers = [layer1, layer2, layer3]
+  #layers = [layer1, layer2]
   # selects 10000 random images for training and testing
   permutation = np.random.permutation(len(data))
   training = permutation[int(num_data/2):num_data]
@@ -138,31 +138,42 @@ N, _ = mnist.data.shape
 # Reshape the data to be square
 mnist.square_data = mnist.data.reshape(N,28,28)
 
+best_results = np.array([1.340, .0622, .492, .386, 100])
+best_accuracy = 0
 input_output_weight = 1.340
 input_no_output_weight = 0.0622
 input_inhibited_output_weight = .492
 no_input_output_weight = .386
-parameters = [input_output_weight, input_no_output_weight, input_inhibited_output_weight, no_input_output_weight]
+input_output_weight2 = 1.2465
+input_no_output_weight2 = .054
+input_inhibited_output_weight2 = .5
+no_input_output_weight2 = .37
+parameters = [[input_output_weight, input_no_output_weight, input_inhibited_output_weight, no_input_output_weight],
+              [input_output_weight2, input_no_output_weight2, input_inhibited_output_weight2, no_input_output_weight2]]
 num_data = 4000
 
 print("Receptive Field: ", 28)
-threshold = 210.7
-print("Threshold: ", threshold)
+thresholds = [210.7, 126.5]
+print("Threshold: ", thresholds)
 print("isForced", True)
 
-training_results, test_results, svm_accuracy  = calculate_metrics(mnist.square_data, mnist.target, 28,threshold, parameters, num_data,True)
+training_results, test_results, svm_accuracy  = calculate_metrics(mnist.square_data, mnist.target, 28,thresholds, parameters, num_data,True)
 coverage = np.sum(test_results[0]) / (num_data/2)
 purity = np.mean(np.amax(training_results, axis=1) / np.sum(training_results, axis=1))
 accuracy = np.mean(test_results[1] / test_results[0])
+if (svm_accuracy > best_accuracy):
+  best_accuracy = svm_accuracy
+  best_results= [parameters[1][0], parameters[1][1], parameters[1][2], parameters[1][3], thresholds[1]]
+print(best_results, best_accuracy)
 #print("Coverage: ", coverage)
 print("Purity: ", purity)
 print("Accuracy: ", accuracy)
 
 print("Receptive Field: ", 28)
-print("Threshold: ", threshold)
+print("Threshold: ", thresholds)
 print("isForced", False)
 
-training_results, test_results, svm_accuracy  = calculate_metrics(mnist.square_data, mnist.target, 28,threshold, parameters, num_data,False)
+training_results, test_results, svm_accuracy  = calculate_metrics(mnist.square_data, mnist.target, 28,thresholds, parameters, num_data,False)
 coverage = np.sum(test_results[0]) / (num_data/2)
 purity = np.mean(np.amax(training_results, axis=1) / np.sum(training_results, axis=1))
 accuracy = np.mean(test_results[1] / test_results[0])
