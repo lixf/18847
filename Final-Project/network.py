@@ -7,22 +7,51 @@ from filters import OffCenterFilter, OnCenterFilter
 import csv
 import time
 
+<<<<<<< HEAD
 def evaluate(layers, data, target, receptive_field, parameters=None, isTraining=True, assignments=None, isForced=False):
   training_results = np.zeros((layers[-1].num_neurons, 10))
   test_results = np.zeros((2,layers[-1].num_neurons))
+=======
+weights_array1 = np.zeros((4, 10, 28, 28))
+weights_array2 = np.zeros((4, 10, 28, 28))
+
+def evaluate(layer1, layer2, data, target, receptive_field, parameters=None, isTraining=True, assignments=None, isForced=False):
+  training_results = np.zeros((10, 10))
+  test_results = np.zeros((2,10))
+>>>>>>> 649ae54605bfca266056bb63ae2614d0e79edd7c
 
   svm_inputs = []
   oldW = np.copy(layers[-1].W)
   for i in range(len(data)):
+<<<<<<< HEAD
     layers[0].raw_data = data[i]
     layers[0].generate_spikes(OnCenterFilter, OffCenterFilter, receptive_field)
     neurons_spiked = np.full(layers[-1].spikes.shape, -1)
+=======
+    if (~isForced):
+      if (i % 1000 == 0):
+        weights_array1[int(i / 1000)] = layer2.W[:784, :].transpose().reshape((10,28,28))
+
+      if (i == 3000):
+        np.save('weights_array3', weights_array1)
+    if (isForced):
+      if (i % 1000 == 0):
+        weights_array2[int(i / 1000)] = layer2.W[:784, :].transpose().reshape((10,28,28))
+
+      if (i == 3000):
+        np.save('weights_array4', weights_array2)
+    layer1.raw_data = data[i]
+    layer1.generate_spikes(OnCenterFilter, OffCenterFilter, receptive_field)
+
+    #print(i)
+>>>>>>> 649ae54605bfca266056bb63ae2614d0e79edd7c
     #for each image go through all time steps
 
     found_answer = False
     for j in range(8):
 
       #feedforward inhibitionn with max 4 spikes
+<<<<<<< HEAD
       #layer2.feedforward_inhibition(100, 8)
 
       for k in range(1,len(layers)):
@@ -35,21 +64,44 @@ def evaluate(layers, data, target, receptive_field, parameters=None, isTraining=
           else:
             layers[1].wta(25, 8)
             layers[2].wta(1, 8)
+=======
+      #layer1.feedforward_inhibition(16)
+
+      layer2.generate_spikes()
+
+      # only select one of the 8 spikes
+      if (isForced):
+        for k in range(len(layer2.spikes)):
+          if (k != target[i]):
+            layer2.spikes[k] = -1
+      else:
+        layer2.wta(1, 8)
+
+>>>>>>> 649ae54605bfca266056bb63ae2614d0e79edd7c
 
       if (isTraining):
         # result array is num_patterns x num_labels, where value is number of
         # occurrences
 
+<<<<<<< HEAD
         for k in range(layers[-1].spikes.shape[0]):
           if (layers[-1].spikes[k] == 0):
+=======
+
+        for k in range(layer2.spikes.shape[0]):
+          if (layer2.spikes[k] == 0):
+>>>>>>> 649ae54605bfca266056bb63ae2614d0e79edd7c
             training_results[k, int(target[i])]+=1
             found_answer = True
+        layer2.stdp_update_rule(parameters)
+
       else:
         for k in range(layers[-1].spikes.shape[0]):
           if (layers[-1].spikes[k] == 0):
             test_results[0,k]+=1
             found_answer = True
             if (int(target[i]) == assignments[k]):
+<<<<<<< HEAD
               test_results[1,int(target[i])]+=1
         neurons_spiked[(layers[-1].spikes == 0) & (neurons_spiked == -1)] = j
       for layer in layers:
@@ -61,6 +113,17 @@ def evaluate(layers, data, target, receptive_field, parameters=None, isTraining=
         layers[k].stdp_update_rule(parameters[k-1])
     for layer in layers:
       layer.reset()
+=======
+              test_results[1,k]+=1
+      if (found_answer):
+        break
+      layer1.increment_time()
+      layer2.increment_time()
+
+
+    layer1.reset()
+    layer2.reset()
+>>>>>>> 649ae54605bfca266056bb63ae2614d0e79edd7c
     #print("\rComplete: ", itr+1, end="")
 
   assignments = np.argmax(training_results, axis=1)
@@ -90,7 +153,12 @@ def calculate_metrics(data, target, receptive_field_length, threshold, parameter
   receptive_field = (int(14-receptive_field_length/2),int(14-receptive_field_length/2))
 
   # threshold indicates the max neuron sum before firing
+<<<<<<< HEAD
   layer2 = layer.Layer(layer_id=2, num_neurons=num_outputs, prev_layer=layer1, threshold=threshold[0], can_overlap=True, max_repeats=25)
+=======
+  layer2 = layer.Layer(layer_id=2, num_neurons=num_outputs, prev_layer=layer1, threshold=threshold)
+  layer2.W = np.random.random(layer2.W.shape) * 10
+>>>>>>> 649ae54605bfca266056bb63ae2614d0e79edd7c
 
   # threshold indicates the max neuron sum before firing
   layer3 = layer.Layer(layer_id=3, num_neurons=10, prev_layer=layer2, threshold=threshold[1], can_overlap=False, max_repeats=1)
