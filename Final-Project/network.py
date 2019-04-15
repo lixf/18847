@@ -44,7 +44,6 @@ def evaluate(layers, data, target, receptive_field, parameters=None, isTraining=
           if (layers[-1].spikes[k] == 0):
             training_results[k, int(target[i])]+=1
             found_answer = True
-        layer2.stdp_update_rule(parameters)
 
       else:
         for k in range(layers[-1].spikes.shape[0]):
@@ -143,11 +142,11 @@ mnist.square_data = mnist.data.reshape(N,28,28)
 best_results = np.array([1.340, .0622, .492, .386, 100])
 best_accuracy = 0
 input_output_weight = 1.340
-input_no_output_weight = 0.0622
+input_no_output_weight = 0#0.0622
 input_inhibited_output_weight = .492
 no_input_output_weight = .386
 input_output_weight2 = 1.2465
-input_no_output_weight2 = .054
+input_no_output_weight2 = 0#.054
 input_inhibited_output_weight2 = .5
 no_input_output_weight2 = .37
 parameters = [[input_output_weight, input_no_output_weight, input_inhibited_output_weight, no_input_output_weight],
