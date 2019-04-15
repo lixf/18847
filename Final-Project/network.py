@@ -16,7 +16,6 @@ def evaluate(layers, data, target, receptive_field, parameters=None, isTraining=
   for i in range(len(data)):
     layers[0].raw_data = data[i]
     layers[0].generate_spikes(OnCenterFilter, OffCenterFilter, receptive_field)
-
     neurons_spiked = np.full(layers[-1].spikes.shape, -1)
     #for each image go through all time steps
 
@@ -31,9 +30,11 @@ def evaluate(layers, data, target, receptive_field, parameters=None, isTraining=
         if (isTraining):
           if (isForced):
             for l in range(1,len(layers)):
+              pass
               layers[l].supervised_rule(int(target[i]))
-          layers[1].wta(25, 8)
-          layers[2].wta(1, 8)
+          else:
+            layers[1].wta(25, 8)
+            #layers[2].wta(1, 8)
 
       if (isTraining):
         # result array is num_patterns x num_labels, where value is number of
@@ -92,10 +93,10 @@ def calculate_metrics(data, target, receptive_field_length, threshold, parameter
   layer2 = layer.Layer(layer_id=2, num_neurons=num_outputs, prev_layer=layer1, threshold=threshold, can_overlap=True, max_repeats=25)
 
   # threshold indicates the max neuron sum before firing
-  layer3 = layer.Layer(layer_id=3, num_neurons=10, prev_layer=layer2, threshold=90, can_overlap=False, max_repeats=1)
+  #layer3 = layer.Layer(layer_id=3, num_neurons=10, prev_layer=layer2, threshold=90, can_overlap=False, max_repeats=1)
 
-  layers = [layer1, layer2, layer3]
-  #layers = [layer1, layer2]
+  #layers = [layer1, layer2, layer3]
+  layers = [layer1, layer2]
   # selects 10000 random images for training and testing
   permutation = np.random.permutation(len(data))
   training = permutation[int(num_data/2):num_data]
@@ -141,7 +142,7 @@ parameters = [input_output_weight, input_no_output_weight, input_inhibited_outpu
 num_data = 4000
 
 print("Receptive Field: ", 28)
-threshold = 100
+threshold = 10
 print("Threshold: ", threshold)
 print("isForced", True)
 

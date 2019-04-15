@@ -65,7 +65,8 @@ class Layer():
         self.remaining_FF_time = 0
         self.contributing_spikes = np.full(shape=(self.W.shape),fill_value=False)
         self.old_spikes = np.full(shape=(self.num_neurons),fill_value=-1)
-
+        self.assignments = np.full((10,self.num_neurons), False)
+        self.inhibited_spikes = np.full(shape=(self.num_neurons), fill_value = False)
     
     def generate_spikes(self):
         """
