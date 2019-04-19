@@ -9,7 +9,7 @@ import time
 
 import pdb
 
-def evaluate(in_layer, hidden_layers, data, target, receptive_field, parameters=None, isTraining=True, assignments=None, isForced=False):
+def evaluate(in_layer, hidden_layers, data, target, receptive_field, parameters=None, isTraining=True, assignments=None, isForced=False, isRSTDP=False):
   training_results = np.zeros((10, 10))
   test_results = np.zeros((2,10))
 
@@ -52,7 +52,7 @@ def evaluate(in_layer, hidden_layers, data, target, receptive_field, parameters=
         layer.increment_time()
       
       if (isTraining):
-        layer.stdp_update_rule(parameters)
+        layer.stdp_update_rule(parameters, isRSTDP, target[i])
 
       in_layer.reset()
       layer.reset()
@@ -69,7 +69,7 @@ def evaluate(in_layer, hidden_layers, data, target, receptive_field, parameters=
     return test_results
 
 
-def calculate_metrics(data, target, receptive_field_length, threshold, parameters=None, num_data=2000, isForced=False, isSorted=False):
+def calculate_metrics(data, target, receptive_field_length, threshold, parameters=None, num_data=2000, isForced=False, isSorted=False, isRSTDP=False):
 
   # Structure of the TNN
 
@@ -81,15 +81,15 @@ def calculate_metrics(data, target, receptive_field_length, threshold, parameter
 
   # threshold indicates the max neuron sum before firing
   layer2 = layer.Layer(layer_id=2, num_neurons=num_outputs, prev_layer=layer1, threshold=threshold)
-  layer3 = layer.Layer(layer_id=3, num_neurons=num_outputs, prev_layer=layer2, threshold=threshold)
-  layer4 = layer.Layer(layer_id=4, num_neurons=num_outputs, prev_layer=layer3, threshold=threshold)
-  layer5 = layer.Layer(layer_id=5, num_neurons=num_outputs, prev_layer=layer4, threshold=threshold)
+  #layer3 = layer.Layer(layer_id=3, num_neurons=num_outputs, prev_layer=layer2, threshold=threshold)
+  #layer4 = layer.Layer(layer_id=4, num_neurons=num_outputs, prev_layer=layer3, threshold=threshold)
+  #layer5 = layer.Layer(layer_id=5, num_neurons=num_outputs, prev_layer=layer4, threshold=threshold)
 
   hidden_layers = []
   hidden_layers.append(layer2)
-  hidden_layers.append(layer3)
-  hidden_layers.append(layer4)
-  hidden_layers.append(layer5)
+  #hidden_layers.append(layer3)
+  #hidden_layers.append(layer4)
+  #hidden_layers.append(layer5)
 
   # selects 10000 random images for training and testing
   permutation = np.random.permutation(len(data))
@@ -103,7 +103,7 @@ def calculate_metrics(data, target, receptive_field_length, threshold, parameter
   # this is the testing phase
   #pdb.set_trace()
 
-  training_results, assignments = evaluate(layer1, hidden_layers, data[training], target[training], receptive_field, parameters, True, None, isForced)
+  training_results, assignments = evaluate(layer1, hidden_layers, data[training], target[training], receptive_field, parameters, True, None, isForced, isRSTDP)
   print(assignments)
 
   test_results = evaluate(layer1, hidden_layers, data[test], target[test], receptive_field,parameters, False, assignments)
@@ -176,11 +176,13 @@ num_data = 5000
 # Configs
 isForced = True
 isSorted = False
+isRSTDP = False
 
 print("Receptive Field: ", 28)
 print("Threshold: ", 300)
 print("isForced", isForced)
 print("isSorted", isSorted)
+print("isRSTDP", isRSTDP)
 
 training_results, test_results  = calculate_metrics(mnist.square_data, mnist.target, 28,300, parameters, num_data, isForced, isSorted)
 coverage = np.sum(test_results[0]) / (num_data/2)
@@ -193,12 +195,14 @@ print("#" * 20)
 
 isForced = False
 isSorted = True
+isRSTDP = False
 print("Receptive Field: ", 28)
 print("Threshold: ", 300)
 print("isForced", isForced)
 print("isSorted", isSorted)
+print("isRSTDP", isRSTDP)
 
-training_results, test_results  = calculate_metrics(mnist.square_data, mnist.target, 28,300, parameters, num_data, isForced, isSorted)
+#training_results, test_results  = calculate_metrics(mnist.square_data, mnist.target, 28,300, parameters, num_data, isForced, isSorted)
 coverage = np.sum(test_results[0]) / (num_data/2)
 purity = np.mean(np.amax(training_results, axis=1) / np.sum(training_results, axis=1))
 accuracy = np.mean(test_results[1] / test_results[0])
@@ -209,15 +213,38 @@ print("#" * 20)
 
 isForced = False
 isSorted = False
+isRSTDP = True
 print("Receptive Field: ", 28)
 print("Threshold: ", 300)
 print("isForced", isForced)
 print("isSorted", isSorted)
+print("isRSTDP", isRSTDP)
 
-training_results, test_results  = calculate_metrics(mnist.square_data, mnist.target, 28,300, parameters, num_data,False)
+training_results, test_results  = calculate_metrics(mnist.square_data, mnist.target, 28,300, parameters, num_data, isForced, isSorted, isRSTDP)
 coverage = np.sum(test_results[0]) / (num_data/2)
 purity = np.mean(np.amax(training_results, axis=1) / np.sum(training_results, axis=1))
 accuracy = np.mean(test_results[1] / test_results[0])
 print("Coverage: ", coverage)
 print("Purity: ", purity)
 print("Accuracy: ", accuracy)
+print("#" * 20)
+
+isForced = False
+isSorted = False
+isRSTDP = False
+print("Receptive Field: ", 28)
+print("Threshold: ", 300)
+print("isForced", isForced)
+print("isSorted", isSorted)
+print("isRSTDP", isRSTDP)
+
+#training_results, test_results  = calculate_metrics(mnist.square_data, mnist.target, 28,300, parameters, num_data, False)
+coverage = np.sum(test_results[0]) / (num_data/2)
+purity = np.mean(np.amax(training_results, axis=1) / np.sum(training_results, axis=1))
+accuracy = np.mean(test_results[1] / test_results[0])
+print("Coverage: ", coverage)
+print("Purity: ", purity)
+print("Accuracy: ", accuracy)
+
+
+
