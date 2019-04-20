@@ -211,8 +211,8 @@ class Layer():
               self.W[input_output == True] = np.maximum(0,self.W[input_output == True] - penalty * input_output_weight)
         
         # Do the usual updates
-        self.W[input_no_output == True] = np.minimum(10,self.W[input_no_output == True] + input_no_output_weight)
-        self.W[input_inhibited_output == True] = np.maximum(0,self.W[input_inhibited_output == True] - input_inhibited_output_weight)
+        #self.W[input_no_output == True] = np.minimum(10,self.W[input_no_output == True] + input_no_output_weight)
+        #self.W[input_inhibited_output == True] = np.maximum(0,self.W[input_inhibited_output == True] - input_inhibited_output_weight)
         self.W[no_input_output == True] = np.maximum(0,self.W[no_input_output == True] - no_input_output_weight)
       else: 
         self.W[input_output == True] = np.minimum(10,self.W[input_output == True] + input_output_weight)

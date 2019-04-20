@@ -171,7 +171,7 @@ input_no_output_weight = .05
 no_input_output_weight = 1
 input_inhibited_output_weight = 1
 parameters = [input_output_weight, input_no_output_weight, input_inhibited_output_weight, no_input_output_weight]
-num_data = 5000
+num_data = 2000
 
 # Configs
 isForced = True
@@ -194,15 +194,15 @@ print("Accuracy: ", accuracy)
 print("#" * 20)
 
 isForced = False
-isSorted = True
-isRSTDP = False
+isSorted = False
+isRSTDP = True
 print("Receptive Field: ", 28)
 print("Threshold: ", 300)
 print("isForced", isForced)
 print("isSorted", isSorted)
 print("isRSTDP", isRSTDP)
 
-#training_results, test_results  = calculate_metrics(mnist.square_data, mnist.target, 28,300, parameters, num_data, isForced, isSorted)
+training_results, test_results  = calculate_metrics(mnist.square_data, mnist.target, 28,300, parameters, num_data, isForced, isSorted)
 coverage = np.sum(test_results[0]) / (num_data/2)
 purity = np.mean(np.amax(training_results, axis=1) / np.sum(training_results, axis=1))
 accuracy = np.mean(test_results[1] / test_results[0])
@@ -211,7 +211,7 @@ print("Purity: ", purity)
 print("Accuracy: ", accuracy)
 print("#" * 20)
 
-isForced = False
+isForced = True
 isSorted = False
 isRSTDP = True
 print("Receptive Field: ", 28)
@@ -238,7 +238,7 @@ print("isForced", isForced)
 print("isSorted", isSorted)
 print("isRSTDP", isRSTDP)
 
-#training_results, test_results  = calculate_metrics(mnist.square_data, mnist.target, 28,300, parameters, num_data, False)
+training_results, test_results  = calculate_metrics(mnist.square_data, mnist.target, 28,300, parameters, num_data, False)
 coverage = np.sum(test_results[0]) / (num_data/2)
 purity = np.mean(np.amax(training_results, axis=1) / np.sum(training_results, axis=1))
 accuracy = np.mean(test_results[1] / test_results[0])
