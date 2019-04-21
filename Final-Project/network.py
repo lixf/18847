@@ -118,7 +118,9 @@ mnist.square_data = mnist.data.reshape(N,28,28)
 #pdb.set_trace()
 
 def runExperiments():
-  results_array = np.load('results.out.npy')
+  #results_array = np.load('results.out.npy')
+  results_array = np.zeros((28, 50, 5, 3))
+
   for i in range(0,28):
 
     range1 = range(0,300, 10)
@@ -139,18 +141,35 @@ def runExperiments():
 
       coverage = 0
       low_coverage = False
-      for k in range(2):
+      for k in range(5):
+        isForced = False
+        isSorted = False
+        isRSTDP = False
+
+        if (k == 1):
+          isForced = True
+        elif (k == 2):
+          isSorted = True
+        elif (k == 3):
+          isForced = True
+          isRSTDP = True
+        elif (k == 4):
+          isRSTDP = True
+
         print("Receptive Field: ", i)
         print("Threshold: ", j)
         print("J_index: ", j_index)
-        print("isForced", k == 0)
+        print("isForced", isForced)
+        print("isSorted", isSorted)
+        print("isRSTDP", isRSTDP)
+
         input_output_weight = 1
         input_no_output_weight = .05
         no_input_output_weight = 1
         input_inhibited_output_weight = 1
         parameters = [input_output_weight, input_no_output_weight, input_inhibited_output_weight, no_input_output_weight]
         num_data = 10000
-        training_results, test_results  = calculate_metrics(mnist.square_data, mnist.target, i+1,j, parameters, num_data,k == 0)
+        training_results, test_results  = calculate_metrics(mnist.square_data, mnist.target, i+1,j, parameters, num_data, isForced, isSorted, isRSTDP)
         coverage = np.sum(test_results[0]) / (num_data/2)
         purity = np.mean(np.amax(training_results, axis=1) / np.sum(training_results, axis=1))
         accuracy = np.mean(test_results[1] / test_results[0])
@@ -165,6 +184,10 @@ def runExperiments():
         np.save('results.out', results_array)
       if low_coverage:
         break
+
+
+
+runExperiments()
 
 input_output_weight = 1
 input_no_output_weight = .05
