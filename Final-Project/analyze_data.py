@@ -80,17 +80,19 @@ for j in range(50):
     coverage_over_thresholds[j, k] = results_array[27, j, k, 0]
 
 coverage_indices1 = np.array(np.nonzero(coverage_over_thresholds[:,0] > 0), dtype=int).reshape(-1)
+print(coverage_indices1)
 coverage_indices2 = np.array(np.nonzero(coverage_over_thresholds[:,1] > 0), dtype=int).reshape(-1)
 coverage_indices3 = np.array(np.nonzero(coverage_over_thresholds[:,2] > 0), dtype=int).reshape(-1)
 coverage_indices4 = np.array(np.nonzero(coverage_over_thresholds[:,3] > 0), dtype=int).reshape(-1)
 coverage_indices5 = np.array(np.nonzero(coverage_over_thresholds[:,4] > 0), dtype=int).reshape(-1)
-
+print(thresholds[27,coverage_indices1])
+print(coverage_over_thresholds[coverage_indices1, 0])
 
 plt.scatter(thresholds[27,coverage_indices1], coverage_over_thresholds[coverage_indices1, 0], label='Unsupervised STDP')
-plt.scatter(thresholds[27,coverage_indices2], coverage_over_thresholds[coverage_indices2, 1], label='Forced STDP')
-plt.scatter(thresholds[27,coverage_indices1], coverage_over_thresholds[coverage_indices3, 2], label='Sorted STDP')
-plt.scatter(thresholds[27,coverage_indices2], coverage_over_thresholds[coverage_indices4, 3], label='RSTDP+Forced STDP')
-plt.scatter(thresholds[27,coverage_indices1], coverage_over_thresholds[coverage_indices5, 4], label='RSTDP')
+#plt.scatter(thresholds[27,coverage_indices2], coverage_over_thresholds[coverage_indices2, 1], label='Forced STDP')
+#plt.scatter(thresholds[27,coverage_indices3], coverage_over_thresholds[coverage_indices3, 2], label='Sorted STDP')
+#plt.scatter(thresholds[27,coverage_indices4], coverage_over_thresholds[coverage_indices4, 3], label='RSTDP+Forced STDP')
+#plt.scatter(thresholds[27,coverage_indices5], coverage_over_thresholds[coverage_indices5, 4], label='RSTDP')
 plt.legend()
 
 plt.xlabel('Threshold')
@@ -102,8 +104,8 @@ plt.show()
 accuracy_over_thresholds = np.zeros((50, 5))
 
 for j in range(50):
-  accuracy_over_thresholds[j, 0] = results_array[18, j, 0, 2]
-  accuracy_over_thresholds[j, 1] = results_array[18, j, 1, 2]
+  for k in range(5):
+    accuracy_over_thresholds[j, k] = results_array[27, j, k, 2]
 
 accuracy_indices1 = np.array(np.nonzero(accuracy_over_thresholds[:,0] > 0), dtype=int).reshape(-1)
 accuracy_indices2 = np.array(np.nonzero(accuracy_over_thresholds[:,1] > 0), dtype=int).reshape(-1)
@@ -112,10 +114,10 @@ accuracy_indices4 = np.array(np.nonzero(accuracy_over_thresholds[:,3] > 0), dtyp
 accuracy_indices5 = np.array(np.nonzero(accuracy_over_thresholds[:,4] > 0), dtype=int).reshape(-1)
 
 plt.scatter(thresholds[27,accuracy_indices1], accuracy_over_thresholds[accuracy_indices1, 0], label='Unsupervised STDP')
-plt.scatter(thresholds[27,accuracy_indices2], accuracy_over_thresholds[accuracy_indices2, 1], label='Forced STDP')
-plt.scatter(thresholds[27,accuracy_indices3], accuracy_over_thresholds[accuracy_indices3, 2], label='Sorted STDP')
-plt.scatter(thresholds[27,accuracy_indices4], accuracy_over_thresholds[accuracy_indices4, 3], label='RSTDP+Forced STDP')
-plt.scatter(thresholds[27,accuracy_indices5], accuracy_over_thresholds[accuracy_indices5, 4], label='RSTDP')
+#plt.scatter(thresholds[27,accuracy_indices2], accuracy_over_thresholds[accuracy_indices2, 1], label='Forced STDP')
+#plt.scatter(thresholds[27,accuracy_indices3], accuracy_over_thresholds[accuracy_indices3, 2], label='Sorted STDP')
+#plt.scatter(thresholds[27,accuracy_indices4], accuracy_over_thresholds[accuracy_indices4, 3], label='RSTDP+Forced STDP')
+#plt.scatter(thresholds[27,accuracy_indices5], accuracy_over_thresholds[accuracy_indices5, 4], label='RSTDP')
 
 plt.legend()
 plt.ylabel('Accuracy (over successfully classified data)')
@@ -137,9 +139,9 @@ overall_accuracy_indices5 = np.array(np.nonzero(overall_accuracy_over_thresholds
 
 plt.scatter(thresholds[27,overall_accuracy_indices1], overall_accuracy_over_thresholds[overall_accuracy_indices1, 0], label='Unsupervised STDP')
 plt.scatter(thresholds[27,overall_accuracy_indices2], overall_accuracy_over_thresholds[overall_accuracy_indices2, 1], label='Forced STDP')
-plt.scatter(thresholds[27,overall_accuracy_indices1], overall_accuracy_over_thresholds[overall_accuracy_indices3, 2], label='Sorted STDP')
-plt.scatter(thresholds[27,overall_accuracy_indices2], overall_accuracy_over_thresholds[overall_accuracy_indices4, 3], label='RSTDP+Forced STDP')
-plt.scatter(thresholds[27,overall_accuracy_indices1], overall_accuracy_over_thresholds[overall_accuracy_indices5, 4], label='RSTDP')
+plt.scatter(thresholds[27,overall_accuracy_indices3], overall_accuracy_over_thresholds[overall_accuracy_indices3, 2], label='Sorted STDP')
+plt.scatter(thresholds[27,overall_accuracy_indices4], overall_accuracy_over_thresholds[overall_accuracy_indices4, 3], label='RSTDP+Forced STDP')
+plt.scatter(thresholds[27,overall_accuracy_indices5], overall_accuracy_over_thresholds[overall_accuracy_indices5, 4], label='RSTDP')
 plt.legend()
 plt.ylabel('Overall Accuracy')
 plt.xlabel('Threshold')

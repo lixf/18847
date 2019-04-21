@@ -8,15 +8,34 @@ import csv
 import time
 
 import pdb
+fig=plt.figure(figsize=(8, 4))
+
+
 
 def evaluate(in_layer, hidden_layers, data, target, receptive_field, parameters=None, isTraining=True, assignments=None, isForced=False, isRSTDP=False):
   training_results = np.zeros((10, 10))
   test_results = np.zeros((2,10))
+  #imshows = []
+  #for num1 in range(2):
+  #  list_imshow = []
+  #  for num2 in range(10):
+  #    fig.add_subplot(2, 10, num1 * 10 + num2 + 1)
+  #    list_imshow.append(plt.imshow((hidden_layers[0].W[:784,0]).reshape((28,28)), cmap='hot', interpolation='nearest'))
+  #  imshows.append(list_imshow)
+  #plt.show(block=False)
 
   for i in range(len(data)):
     in_layer.raw_data = data[i]
     in_layer.generate_spikes(OnCenterFilter, OffCenterFilter, receptive_field)
 
+
+
+    #if (i % 50 == 0 and isTraining):
+    #  for s in range(10):
+    #    imshows[0][s].set_data((hidden_layers[0].W[:784,s]).reshape((28,28)))
+    #    imshows[1][s].set_data((hidden_layers[0].W[784:,s]).reshape((28,28)))
+    #  plt.draw()
+    #  plt.pause(.00001)  
     found_answer = False
     for layer in hidden_layers:
 
@@ -39,6 +58,8 @@ def evaluate(in_layer, hidden_layers, data, target, receptive_field, parameters=
             if (layer.spikes[k] == 0):
               training_results[k, int(target[i])]+=1
               found_answer = True
+              #layer.stdp_update_rule(parameters, isRSTDP, target[i])
+
         else:
           for k in range(layer.spikes.shape[0]):
             if (layer.spikes[k] == 0):
@@ -118,8 +139,8 @@ mnist.square_data = mnist.data.reshape(N,28,28)
 #pdb.set_trace()
 
 def runExperiments():
-  #results_array = np.load('results.out.npy')
-  results_array = np.zeros((28, 50, 5, 3))
+  results_array = np.load('results.out.npy')
+  #results_array = np.zeros((28, 50, 5, 3))
 
   for i in range(0,28):
 
@@ -134,14 +155,16 @@ def runExperiments():
 
     for j in selected_range:
       j_index = int(j /10)
-      if (i >=4 and i < 8):
+      if (i >=4 and i < 12):
         j_index = int(j/20)
-      elif (i >= 8):
+      elif (i >= 12):
         j_index = int(j/50)
 
       coverage = 0
       low_coverage = False
+
       for k in range(5):
+
         isForced = False
         isSorted = False
         isRSTDP = False
@@ -179,22 +202,20 @@ def runExperiments():
         results_array[i, j_index, k, 0] = coverage
         results_array[i, j_index, k, 1] = purity
         results_array[i, j_index, k, 2] = accuracy
-        if (coverage < 0.05):
-          low_coverage = True
+        if (coverage >= 0.05):
+          low_coverage = False
         np.save('results.out', results_array)
       if low_coverage:
         break
 
 
-
 runExperiments()
-
 input_output_weight = 1
 input_no_output_weight = .05
 no_input_output_weight = 1
 input_inhibited_output_weight = 1
 parameters = [input_output_weight, input_no_output_weight, input_inhibited_output_weight, no_input_output_weight]
-num_data = 2000
+num_data = 4000
 
 # Configs
 isForced = True
