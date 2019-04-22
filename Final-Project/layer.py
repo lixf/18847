@@ -1,6 +1,7 @@
 import math
 import numpy as np
 import matplotlib.pyplot as plt
+import pdb
 
 # This layer connects to a previous layer that is spiking.
 # It carries W weights that are initialized at random.
@@ -170,7 +171,7 @@ class Layer():
         winners = np.array(np.where(self.spikes == 0))
         return (out, winners)
 
-    def stdp_update_rule(self, parameters=None):
+    def stdp_update_rule(self, parameters=None, isRSTDP=False, target=0):
       curr_spikes = self.spikes == 0
       selected_spikes = np.outer(np.full((self.prev_layer.num_neurons), True), curr_spikes == True)
       inhibited_spikes = np.outer(np.full((self.prev_layer.num_neurons), True), self.spikes != self.old_spikes)
@@ -197,9 +198,27 @@ class Layer():
 
       # self.W indixes these 2d arrays and performs stdp 
       # the values for the weights to increase and decrease are manually picked
-      self.W[input_output == True] = np.minimum(10,self.W[input_output == True] + input_output_weight)
-      self.W[input_no_output == True] = np.minimum(10,self.W[input_no_output == True] + input_no_output_weight)
-      self.W[input_inhibited_output == True] = np.maximum(0,self.W[input_inhibited_output == True] - input_inhibited_output_weight)
-      #self.W[no_input_output == True] = 0
-      self.W[no_input_output == True] = np.maximum(0,self.W[no_input_output == True] - no_input_output_weight)
+      #pdb.set_trace()
+      if isRSTDP:
+        # If we are using reenforcement STDP, modify the update rule to reward the correct neuron
+        reward = 2
+        penalty = 1
+        for k in range(self.spikes.shape[0]):
+          if self.spikes[k] == 0:
+            if k == target:
+              self.W[input_output == True] = np.minimum(10,self.W[input_output == True] + reward * input_output_weight)
+            else:
+              self.W[input_output == True] = np.maximum(0,self.W[input_output == True] - penalty * input_output_weight)
+        
+        # Do the usual updates
+        #self.W[input_no_output == True] = np.minimum(10,self.W[input_no_output == True] + input_no_output_weight)
+        #self.W[input_inhibited_output == True] = np.maximum(0,self.W[input_inhibited_output == True] - input_inhibited_output_weight)
+        self.W[no_input_output == True] = np.maximum(0,self.W[no_input_output == True] - no_input_output_weight)
+      else: 
+        self.W[input_output == True] = np.minimum(10,self.W[input_output == True] + input_output_weight)
+        self.W[input_no_output == True] = np.minimum(10,self.W[input_no_output == True] + input_no_output_weight)
+        #self.W[input_inhibited_output == True] = 0
+        self.W[input_inhibited_output == True] = np.maximum(0,self.W[input_inhibited_output == True] - input_inhibited_output_weight)
+        #self.W[no_input_output == True] = 0
+        self.W[no_input_output == True] = np.maximum(0,self.W[no_input_output == True] - no_input_output_weight)
 
