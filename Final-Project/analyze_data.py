@@ -18,9 +18,9 @@ def calculateThresholds():
 
     for j in selected_range:
       j_index = int(j /10)
-      if (i >=4 and i < 8):
+      if (i >=4 and i < 12):
         j_index = int(j/20)
-      elif (i >= 8):
+      elif (i >= 12):
         j_index = int(j/50)
     
       threshold_values[i, j_index] = j
@@ -89,10 +89,10 @@ print(thresholds[27,coverage_indices1])
 print(coverage_over_thresholds[coverage_indices1, 0])
 
 plt.scatter(thresholds[27,coverage_indices1], coverage_over_thresholds[coverage_indices1, 0], label='Unsupervised STDP')
-#plt.scatter(thresholds[27,coverage_indices2], coverage_over_thresholds[coverage_indices2, 1], label='Forced STDP')
-#plt.scatter(thresholds[27,coverage_indices3], coverage_over_thresholds[coverage_indices3, 2], label='Sorted STDP')
-#plt.scatter(thresholds[27,coverage_indices4], coverage_over_thresholds[coverage_indices4, 3], label='RSTDP+Forced STDP')
-#plt.scatter(thresholds[27,coverage_indices5], coverage_over_thresholds[coverage_indices5, 4], label='RSTDP')
+plt.scatter(thresholds[27,coverage_indices2], coverage_over_thresholds[coverage_indices2, 1], label='Forced STDP')
+plt.scatter(thresholds[27,coverage_indices3], coverage_over_thresholds[coverage_indices3, 2], label='Sorted STDP')
+plt.scatter(thresholds[27,coverage_indices4], coverage_over_thresholds[coverage_indices4, 3], label='RSTDP+Forced STDP')
+plt.scatter(thresholds[27,coverage_indices5], coverage_over_thresholds[coverage_indices5, 4], label='RSTDP')
 plt.legend()
 
 plt.xlabel('Threshold')
@@ -114,10 +114,10 @@ accuracy_indices4 = np.array(np.nonzero(accuracy_over_thresholds[:,3] > 0), dtyp
 accuracy_indices5 = np.array(np.nonzero(accuracy_over_thresholds[:,4] > 0), dtype=int).reshape(-1)
 
 plt.scatter(thresholds[27,accuracy_indices1], accuracy_over_thresholds[accuracy_indices1, 0], label='Unsupervised STDP')
-#plt.scatter(thresholds[27,accuracy_indices2], accuracy_over_thresholds[accuracy_indices2, 1], label='Forced STDP')
-#plt.scatter(thresholds[27,accuracy_indices3], accuracy_over_thresholds[accuracy_indices3, 2], label='Sorted STDP')
-#plt.scatter(thresholds[27,accuracy_indices4], accuracy_over_thresholds[accuracy_indices4, 3], label='RSTDP+Forced STDP')
-#plt.scatter(thresholds[27,accuracy_indices5], accuracy_over_thresholds[accuracy_indices5, 4], label='RSTDP')
+plt.scatter(thresholds[27,accuracy_indices2], accuracy_over_thresholds[accuracy_indices2, 1], label='Forced STDP')
+plt.scatter(thresholds[27,accuracy_indices3], accuracy_over_thresholds[accuracy_indices3, 2], label='Sorted STDP')
+plt.scatter(thresholds[27,accuracy_indices4], accuracy_over_thresholds[accuracy_indices4, 3], label='RSTDP+Forced STDP')
+plt.scatter(thresholds[27,accuracy_indices5], accuracy_over_thresholds[accuracy_indices5, 4], label='RSTDP')
 
 plt.legend()
 plt.ylabel('Accuracy (over successfully classified data)')
@@ -153,8 +153,10 @@ purities = []
 accuracies = []
 for i in range(28):
   for j in range(50):
-    purities.append(results_array[i, j, 0, 1])
-    accuracies.append(results_array[i, j, 0, 2])
+    for k in range(5):
+      if (k != 4 and k!= 3 and k!= 1):
+        purities.append(results_array[i, j, k, 1])
+        accuracies.append(results_array[i, j, k, 2])
 
 plt.scatter(accuracies, purities, label='Purities vs Accuracies')
 plt.plot(np.arange(0, 1, .1), np.arange(0, 1, .1), label='Expectation')
