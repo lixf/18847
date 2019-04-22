@@ -161,7 +161,7 @@ def runExperiments():
         j_index = int(j/50)
 
       coverage = 0
-      low_coverage = False
+      low_coverage = True
 
       for k in range(5):
 
