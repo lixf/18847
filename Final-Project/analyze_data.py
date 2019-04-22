@@ -1,29 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-not_forced_weights_array = np.load('weights_array3.npy')
-forced_weights_array = np.load('weights_array4.npy')
-
-fig=plt.figure(figsize=(16, 16))
-columns = 10
-rows = 4
-
-for i in range(len(not_forced_weights_array)):
-  for j in range(not_forced_weights_array.shape[1]):
-    fig.add_subplot(rows, columns, i*10 + j+1)
-    plt.imshow(not_forced_weights_array[i][j], cmap='hot', interpolation='nearest')
-plt.show()
-
-fig=plt.figure(figsize=(16, 16))
-
-for i in range(len(forced_weights_array)):
-  for j in range(not_forced_weights_array.shape[1]):
-    fig.add_subplot(rows, columns, i*10 + j+1)
-    plt.imshow(forced_weights_array[i][j], cmap='hot', interpolation='nearest')
-plt.show()
-
-
-
 results_array = np.load('results.out.npy')
 def calculateThresholds():
   threshold_values = np.zeros((28, 50))
@@ -72,7 +49,6 @@ for i in range(28):
   for k in range(5):
     best_thresholds[i, k] = thresholds[i, int(best_overall_accuracy[i, 1, k])]
 
-#print(best_thresholds)
 
 plt.scatter(range(1,29), best_overall_accuracy[:, 0, 0], label='Unsupervised STDP')
 plt.scatter(range(1,29), best_overall_accuracy[:, 0, 1], label='Forced STDP')
@@ -103,13 +79,11 @@ for j in range(50):
     coverage_over_thresholds[j, k] = results_array[27, j, k, 0]
 
 coverage_indices1 = np.array(np.nonzero(coverage_over_thresholds[:,0] > 0), dtype=int).reshape(-1)
-print(coverage_indices1)
 coverage_indices2 = np.array(np.nonzero(coverage_over_thresholds[:,1] > 0), dtype=int).reshape(-1)
 coverage_indices3 = np.array(np.nonzero(coverage_over_thresholds[:,2] > 0), dtype=int).reshape(-1)
 coverage_indices4 = np.array(np.nonzero(coverage_over_thresholds[:,3] > 0), dtype=int).reshape(-1)
 coverage_indices5 = np.array(np.nonzero(coverage_over_thresholds[:,4] > 0), dtype=int).reshape(-1)
-print(thresholds[27,coverage_indices1])
-print(coverage_over_thresholds[coverage_indices1, 0])
+
 
 plt.scatter(thresholds[27,coverage_indices1], coverage_over_thresholds[coverage_indices1, 0], label='Unsupervised STDP')
 plt.scatter(thresholds[27,coverage_indices2], coverage_over_thresholds[coverage_indices2, 1], label='Forced STDP')
