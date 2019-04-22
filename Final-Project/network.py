@@ -142,7 +142,7 @@ def runExperiments():
   results_array = np.load('results.out.npy')
   #results_array = np.zeros((28, 50, 5, 3))
 
-  for i in range(0,28):
+  for i in range(12,28):
 
     range1 = range(0,300, 10)
     range2 = range(0, 500, 20)
@@ -152,7 +152,8 @@ def runExperiments():
       selected_range = range2
     elif (i >=12):
       selected_range = range3
-
+    
+    low_coverage_array = np.full((5), False)
     for j in selected_range:
       j_index = int(j /10)
       if (i >=4 and i < 12):
@@ -164,7 +165,8 @@ def runExperiments():
       low_coverage = True
 
       for k in range(5):
-
+        if (low_coverage_array[k] == True):
+          continue
         isForced = False
         isSorted = False
         isRSTDP = False
@@ -204,6 +206,8 @@ def runExperiments():
         results_array[i, j_index, k, 2] = accuracy
         if (coverage >= 0.05):
           low_coverage = False
+        else:
+          low_coverage_array[k] = True
         np.save('results.out', results_array)
       if low_coverage:
         break
